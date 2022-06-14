@@ -54,38 +54,105 @@ Notes:
 """
 
 '''
+ARRAH - CENTRAL BODY OF THE MATERIAL PLANE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+'''
+
+# Sol values (Earth's sun) for relative calcs
+m_S = ob.m_S            # mass, kg
+r_S = ob.r_S            # radius, km
+T_S = ob.T_S            # effective surface temperature, K
+L_S = ob.L_S            # luminosity, J/s (W)
+
+m_A = 1.75 # let Arrah = 1.75 solar masses
+m_A_kg = 1.75*m_S # Arrah mass in kg
+mu_A = m_S*m_A*const.G/(const.kilo**3) # Arrah mu, km^3/s^2
+Arrah_color = '#ffc18dff' # 3500K, from https://academo.org/demos/colour-temperature-relationship/
+T_A = 3500      # temperature, K
+Lrel = 1        # relative luminosity, L/Lsun
+rrel = ((T_S/T_A)**2)*np.sqrt(Lrel/L_S) # relative stefan-boltzmann law
+r_A = rrel*r_S # km
+
+Arrah = ob.CentralBody('Arrah', mu = mu_A, r = r_A, m = m_A_kg, T = T_A)
+
+'''
 PLANETS OF THE MATERIAL PLANE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 '''
+
+names = ['Sarlona',
+         'Khorvaire',
+         'Ring of Siberys',
+         'Xendrik',
+         'Aerenal',
+         'Argonnessen',
+         'Frostfell',
+         'Everice']
 
 planets = ['Sarlona',
            'Khorvaire',
            'Xendrik',
            'Aerenal',
            'Argonnessen',
-           'Frostfell']
-g = {'Sarlona':9.5,
-     'Khorvaire':10,
-     'Xendrik':7.5,
-     'Aerenal':2,
-     'Argonnessen':20,
-     'Frostfell':5} # surface gravity, m/s^2
-r = {'Sarlona':3500,
-     'Khorvaire':4000,
-     'Xendrik':3000,
-     'Aerenal':1000,
-     'Argonnessen':50000,
-     'Frostfell':3000} # radius, km
+           'Frostfell',
+           'Everice']
+g = {'Sarlona':     9.5,
+     'Khorvaire':   10,
+     'Xendrik':     7.5,
+     'Aerenal':     2,
+     'Argonnessen': 20,
+     'Frostfell':   5,
+     'Everice':     5} # surface gravity, m/s^2
+r = {'Sarlona':     3500,
+     'Khorvaire':   4000,
+     'Xendrik':     3000,
+     'Aerenal':     1000,
+     'Argonnessen': 50000,
+     'Frostfell':   3000,
+     'Everice':     3000} # radius, km
 
+# create CentralBody objects for planets
 CB = {}
 for x in planets:
-    CB[x] = ob.CentralBody(g = g[x], r = r[x])
+    CB[x] = ob.CentralBody(x, g = g[x], r = r[x])
 
+# extract parameters of interest
 C = {}; m = {}; mu = {}; rho = {}
 for x in planets:
     C[x] = CB[x].C # circumference, km
     m[x] = CB[x].m # mass, kg
     mu[x] = CB[x].mu # gravitational parameter, km^3/s^2
     rho[x] = CB[x].rho # density, kg/m^3
+    
+# orbital semimajor axes of planets
+# compare Eberron orbits to HZ
+P_Khorvaire = 336*const.day # [s] Khorvaire's year is 336 days
+# TRAPPIST-1
+orb_T = np.array([24.0, 15.0, 9.0, 6.0, 4.0, 3.0, 2.0]) # number of orbits
+n_orb = orb_T[1:len(planets)-1+1]
+factor = 2
+n_orb[4] = n_orb[4]/factor
+n_orb[5] = n_orb[5]/(factor**2)
+n_norm = n_orb/n_orb[1] # normalize to the 2nd planet (Khorvaire)
+Pnorm = n_orb[1]/n_orb # TRAPPIST orbital period ratios
+P_E = P_Khorvaire*Pnorm # [s] relative period of Eberron planets
+P_E_days = P_E/const.day # [d]
+a_vec = []
+a_vec = np.zeros((len(names),1), dtype='float64')
+for i in range(len(names)-2):
+    a_vec[i] = ob.P2a(P_E[i], mu_A) # semimajor axes, km
+a_vec[6:8] = a_vec[5] # correct Frostfell & Everice indices
+a_vec[4:6] = a_vec[3:5] # correct Aerenal & Argonnessen indices
+
+ArrahSystem = {'names':names,
+               'r'    :a_vec,    
+               'title':'Eberron',
+               'CB'   :Arrah}
+
+'''
+for i in range(len(planets[:-1])):
+    print(_names[i],':',round(a_vec[i][0]/ob.AU,2))
+'''
+
+'''
 print('circumference:')
 print(C)
 print(' ')
@@ -98,6 +165,7 @@ print(' ')
 print('density:')
 print(rho)
 print(' ')
+'''
 
 '''
 MOONS OF KHORVAIRE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -167,18 +235,18 @@ i = 15 # inclination, deg
 omega = 90 # argument of periapse, deg
 
 mu_E = ob.Earth.mu # Earth gravitational parameter, km^3/s^2
-print('Khorvaire GEO orbit:')
+#print('Khorvaire GEO orbit:')
 PGEO = const.day # Khorvaire day = 24 hours
 rGEO = ob.P2a(PGEO, mu['Khorvaire'])
-print(rGEO)
-print('Xendrik GEO orbit:')
+#print(rGEO)
+#print('Xendrik GEO orbit:')
 rGEO = ob.P2a(PGEO, mu['Xendrik'])
 #rGEO = ob.P2a(PGEO, mu_E)
-print(rGEO)
-print(' ')
+#print(rGEO)
+#print(' ')
 e = 0.2 # eccentricity
-print('e = '+str(e))
-print(' ')
+#print('e = '+str(e))
+#print(' ')
 delta_earthmoon = ob.delta_Luna # angular diameter of Earth's moon
 rho_earthmoon = ob.rho_Luna # density of Earth's moon
 rho_moons = 3000 # density of Khorvaire's moons, kg/m^3
@@ -217,6 +285,8 @@ for x in moons:
     delta_earthratio_p[x] = delta_p[x]/delta_earthmoon # ratio to Earth's moon (31.7 arcmin)
     delta_earthratio_a[x] = delta_a[x]/delta_earthmoon # ratio to Earth's moon
     [theta[x], err[x]] = ob.Me2theta(M[x], e) # true anomaly, deg
+
+'''
 print('diameter of moons:')
 print(D)
 print(' ')
@@ -266,20 +336,21 @@ print(delta_earthratio_p)
 #print('min (ra):')
 #print(delta_earthratio_a)
 #print(' ')
+'''
 
-print('RAAN of moons:')
+#print('RAAN of moons:')
 RAAN = {}
 y = 360./12.
 for x in np.arange(12):
     z = (x*y) - 90
     if z<0: z = z + 360
-    print(moons[x]+' - '+str(z))
+    #print(moons[x]+' - '+str(z))
     RAAN[moons[x]] = z
-print(' ')
+#print(' ')
 
-print('theta of moons:')
-print(theta)
-print(' ')
+#print('theta of moons:')
+#print(theta)
+#print(' ')
 
 moonCOEs = np.zeros((len(moons), 6))
 loop = 0

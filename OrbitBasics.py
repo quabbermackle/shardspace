@@ -557,6 +557,7 @@ Earth = CentralBody('Earth', mu = muE, r = rE, g = gE)
 Sun = CentralBody('Sun', mu = mu_S, g = g_S, r = r_S, m = m_S, rho = rho_S, T = T_S, 
                   delta = delta_S, d = d_S)
 
+
 SolSystem = {'names':Sol_names,
              'r'    :Sol_a,    
              'title':'Solar System',

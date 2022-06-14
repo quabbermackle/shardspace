@@ -15,7 +15,7 @@ import OrbitBasics as ob
 from OrbitBasics import dist
 import Constants_Eberron as eberron
 CB = eberron.CB # dict of CentralBody objects
-planets = eberron.planets
+planets = eberron.planets[:-1]
 
 # Universal constants
 c = const.c # speed of light, m/s
@@ -244,14 +244,14 @@ P_L = np.array([1.0, 2.0, 4.0, 8.0, 16.0, 32.0]) # orbital periods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 '''
 
-print('Earth:')
+#print('Earth:')
 HZ_E = HZcalc() # AU
-print('inner HZ =',str(round(HZ_E[0],3)),'AU')
-print('outer HZ =',str(round(HZ_E[1],3)),'AU')
-print(' ')
+#print('inner HZ =',str(round(HZ_E[0],3)),'AU')
+#print('outer HZ =',str(round(HZ_E[1],3)),'AU')
+#print(' ')
 
 # constants for Arrah, Eberron's sun
-print('Arrah:')
+#print('Arrah:')
 #r_A = 1000000   # radius, km
 #L_A = 300e24    # luminosity, J/s (W)
 
@@ -262,38 +262,39 @@ print('Arrah:')
 #print('peak wavelength =',str(lmax))
 
 #print(' ')
+# ----- USE THESE VALUES ----------------
 T_A = 3500      # temperature, K
 Lrel = 1        # relative luminosity, L/Lsun
-print('for T =',str(T_A))
-print('and L = Lsun,')
+#print('for T =',str(T_A))
+#print('and L = Lsun,')
 
 rrel = TL2rrel(T_A, Lsun)
 r_A = rrel*rsun # km
-print('r =',str(round(rrel,2)),'times rsun')
-print('(',str(round(r_A,-3)),'km )')
+#print('r =',str(round(rrel,2)),'times rsun')
+#print('(',str(round(r_A,-3)),'km )')
 
 lmax = T2lmax(T_A)
-print('peak wavelength =',str(round(lmax)))
+#print('peak wavelength =',str(round(lmax)))
 
 HZ_A = HZcalc(T_A, Lrel) # runaway & max greenhouse limits
-print('inner HZ =',str(round(HZ_A[0],3)),'AU')
-print('outer HZ =',str(round(HZ_A[1],3)),'AU')
+#print('inner HZ =',str(round(HZ_A[0],3)),'AU')
+#print('outer HZ =',str(round(HZ_A[1],3)),'AU')
 HZ_Avm = HZcalc(T_A, Lrel, type='vm') # recent Venus & early Mars limits
-print('Venus HZ =',str(round(HZ_Avm[0],3)),'AU')
-print('Mars HZ =',str(round(HZ_Avm[1],3)),'AU')
+#print('Venus HZ =',str(round(HZ_Avm[0],3)),'AU')
+#print('Mars HZ =',str(round(HZ_Avm[1],3)),'AU')
 '''
 HZ_X = HZcalc(T_A, Lrel, e=0.1)
 print('eccentric Xendrik:')
 print('inner HZ =',str(round(HZ_X[0],3)),'AU')
 print('outer HZ =',str(round(HZ_X[1],3)),'AU')
 '''
-print(' ')
+#print(' ')
 
-print('Relative atmospheric pressure:')
+#print('Relative atmospheric pressure:')
 for i in planets:
     Prel = Mr2Prel(CB[i].m, CB[i].r)
-    print(i,':',Prel)
-print(' ')
+    #print(i,':',Prel)
+#print(' ')
 
 '''
 # orbital resonance
@@ -330,6 +331,7 @@ Pnorm = n_orb[1]/n_orb # TRAPPIST orbital period ratios
 P_E = P_Khorvaire*Pnorm # [s] relative period of Eberron planets
 P_E_days = P_E/const.day # [d]
 
+
 print('Eberron orbital distances')
 print('number of orbits relative to 1 Khorvaire orbit:')
 for i in range(len(names)):
@@ -342,6 +344,8 @@ for i in range(len(planets)):
     print(names[i],':',round(P_E_days[i],2))
 print(' ')
 
+
+'''
 m_vec = np.linspace(0.1, 2, 20) # let Arrah's mass range from 0.1 to 2 mSun
 mu_vec = m_S*m_vec*const.G/(const.kilo**3) # Arrah mu range, km^3/s^2
 a_vec = np.zeros((len(names),len(mu_vec)))
@@ -354,20 +358,23 @@ plt.axvline(HZ_A[0], c='m', ls='--', label='Inner HZ limit')
 plt.axvline(HZ_A[1], c='c', ls='--', label='Outer HZ limit')
 plt.axvline(HZ_Avm[0], c='r', ls='--', label='Venus HZ limit')
 plt.axvline(HZ_Avm[1], c='b', ls='--', label='Mars HZ limit')
+'''
 
 m_A = 1.75 # let Arrah = 1.75 solar masses
-mu_A = m_S*m_A*const.G/(const.kilo**3) # Arrah mu range, km^3/s^2
+mu_A = m_S*m_A*const.G/(const.kilo**3) # Arrah mu, km^3/s^2
 a_vec = []
 a_vec = np.zeros((len(names),1), dtype='float64')
 for i in range(len(names)):
     a_vec[i] = ob.P2a(P_E[i], mu_A) # semimajor axes, km
-    plt.plot(a_vec[i]/AU, m_A, 'kx')
-
+    #plt.plot(a_vec[i]/AU, m_A, 'kx')
+'''
 plt.xlabel('orbital distance, AU')
 plt.ylabel('Arrah mass, mSun')
 plt.xscale('log')
 plt.legend()
 plt.show()
+'''
+
 
 print('Eberron final parameters:')
 print('Arrah mass = ',m_A,'solar masses')
@@ -376,5 +383,7 @@ print('semimajor axes [AU]:')
 for i in range(len(planets)):
     print(names[i],':',round(a_vec[i][0]/AU,2))
 print(' ')
-
-
+print('semimajor axes [km]:')
+for i in range(len(planets)):
+    print(names[i],':',round(a_vec[i][0],2))
+print(' ')

@@ -384,6 +384,8 @@ def galifar2sovereign(YK = GalifarDate()):
     return SovereignDate(w=week, d=day, s=season, y=YK.year)
 
 # TEST
+    
+'''
 test1 = GalifarDate(d=20, m='Olarune', y=994)
 test1.disp(dofw=True, cal='Druidic')
 print('day of year: '+str(test1.days()))
@@ -417,7 +419,7 @@ test9.disp(True)
 
 test10 = sovereign2galifar(galifar2sovereign(GalifarDate()))
 test10.disp(True)
-
+'''
 
 
 

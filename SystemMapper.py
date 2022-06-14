@@ -21,6 +21,8 @@ import pathlib as pl
 from os import path
 
 import OrbitBasics as ob
+import Constants_Eberron as eb
+import Calendars as cal
 
 '''
 -------------------------------------------------------------------------------
@@ -31,7 +33,7 @@ CONSTANTS
 Mmi2km = 1e6*const.mile/1e3 # conversion factor, million miles to km
 
 d_inner = round(20*Mmi2km) # km, dist of spaces on the inner track
-d_outer = round(400*Mmi2km) # km, dist of spaces on the outer track
+d_outer = round(100*Mmi2km) # km, dist of spaces on the outer track
 
 rmax_inner = round(300*Mmi2km) # km, outer radius of inner track
 rmin_outer = round(200*Mmi2km) # inner radius of outer track
@@ -66,7 +68,7 @@ class SystemMap:
         # this assumes all planets have circular orbits
         self.planets = planets
         self.names = planets['names']
-        self.r = planets['r']
+        self.r = planets['r'].flatten()
         self.cb = planets['CB']
         
         # epoch date
@@ -271,11 +273,22 @@ TEST
 -------------------------------------------------------------------------------
 '''
 
+'''
+# Sol System test
 test = SystemMap()
 test.showepoch()
 test.showdate(1*const.year)
 plt.show()
 #print(test.rsphere/d_outer)
+'''
+
+
+# Arrah System test
+test = SystemMap(eb.ArrahSystem)
+test.showepoch()
+test.showdate(1*cal.YEAR)
+plt.show()
+
 
 '''
 fig, ax = plt.subplots()
