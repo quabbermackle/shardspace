@@ -189,7 +189,6 @@ root = Tk()
 
 # use ttk.Frame objects as containers
 frame = ttk.Frame(root, width=350, height=350) # displays as a simple rectangle
-frame.grid()
 # 350 = pixels
 # 350c = centimeters
 # 350m = millimeters
@@ -208,7 +207,6 @@ ttk.Frame(root, width=200, height=200, style='Danger.TFrame').grid()
 
 # use ttk.Label objects to identify controls and provide info to the user
 label = ttk.Label(root, text='Full name:')
-label.grid()
 # an object attached to a widget must be a subclass of type Variable(), of
 #   which there are StringVar(), IntVar(), DoubleVar(), and BooleanVar() predefined
 # use the get() and set() methods of a Variable() object to read or write the
@@ -231,6 +229,89 @@ label['font'] = "TkDefaultFont"
 label['foreground'] = 'blue' # text color
 label['background'] = '#ff340a' # background color
 label['relief'] = 'sunken'
+label['anchor'] = 'center' # n, ne, e, se, s, sw, w, nw, or center
+resultsContents.set('New value to \ndisplay')
+# use the 'wraplength' option to wrap text to a max line length (pixels etc)
+label['justify'] = 'right' # left, center, or right
+
+# create ttk.Button() objects for users to interact with by clicking
+# buttons take a callback function, 'command', which must be predefined
+def myaction():
+    pass
+
+button = ttk.Button(root, text='Okay', command=myaction)
+# buttons also have options text, textvariable, image, and compound
+# buttons have a 'default' config option:
+#   if 'default' = 'active', button is invoked when Return/Enter is pressed
+#   otherwise, 'default' = 'normal'
+# note that you still need to create an event binding to make Return/Enter activate the button
+root.bind('<Return>', lambda e: button.invoke()) # call the button's command with the invoke() method
+close = ttk.Button(root, text='Close', command=myaction)
+root.bind('<Key-Escape>', lambda e: close.invoke())
+button.state(['disabled'])          # set the disabled flag
+button.state(['!disabled'])         # clear the disabled flag
+button.instate(['disabled'])        # true if disabled, else false
+button.instate(['!disabled'])       # true if not disabled, else false
+button.instate(['!disabled'], myaction)  # execute 'cmd' if not disabled
+# full list of state flags in themed widgets:
+#    active, disabled, focus, pressed, selected, background, readonly, alternate, and invalid
+
+# use checkbuttons, ttk.Checkbutton() for a button with a binary value
+# when clicked, the toggle is flipped and the callback invoked
+# good for turning options on or off
+checklabel = ttk.Label(root, text='Units')
+activeSystem = StringVar()
+checklabel['textvariable'] = activeSystem
+def metricChanged():
+    activeSystem.set(measureSystem.get())
+measureSystem = StringVar()
+check = ttk.Checkbutton(root, text='Use Metric',
+                        command=metricChanged, variable=measureSystem,
+                        onvalue='metric', offvalue='imperial')
+# by default, onvalue=1 and offvalue=0, unless overridden like above
+check.instate(['alternate']) # set to indeterminate tristate value
+
+# various subclasses of Varable():
+s = StringVar(value="abc")   # default value is ''
+b = BooleanVar(value=True)   # default is False
+i = IntVar(value=10)         # default is 0
+d = DoubleVar(value=10.5)    # default is 0.0
+
+# radiobutton widgets let you choose between mutually exclusive choices
+# similar to checkbutton but with more than two options
+# always used as a set, with multiple radiobutton widgets tied to one choice
+# create an instance of the ttk.Radiobutton() class, typically several at once
+phone = StringVar()
+home = ttk.Radiobutton(root, text='Home', variable=phone, value='home')
+office = ttk.Radiobutton(root, text='Office', variable=phone, value='office')
+cell = ttk.Radiobutton(root, text='Mobile', variable=phone, value='cell')
+
+# entry widgets present a single-line text field that takes a string value
+# create an instance of the ttk.Entry() class with a StringVar textvariable
+username = StringVar()
+name = ttk.Entry(root, textvariable=username)
+name['width'] = 20 # number of characters wide
+print('current value is %s' % name.get())
+name.delete(0,'end') # delete between two indices, 0-based
+name.insert(0, 'your name') # insert new text at a given index
+# entry widgets don't have a callback
+# to watch for changes, watch for changes in the linked variable
+def it_has_been_written(*args):
+    ...
+username.trace_add("write", it_has_been_written)
+# entries for passwords can display the contents as a bullet or other symbol
+# set the 'show' config option to the desired display character
+password = StringVar()
+passwd = ttk.Entry(root, textvariable=password, show="*")
+# entries can also be disabled via the 'state' configs
+# they can also use the 'state' flag 'readonly':
+#   if set, users cannot change the entry, but can select the text and copy it to the clipboard
+# there is also an 'invalid' state, set if the entry widget fails validation
+
+# Validation
+
+for child in root.winfo_children(): 
+            child.grid() # draw all children
 
 print_hierarchy(root)
 root.mainloop()
