@@ -226,27 +226,47 @@ Hyear = ['Hammer',
          'The Feast of the Moon',
          'Nightal'] # Harptos calendar year
 
+def ordinal(n=0):
+    # return the input number as an ordinal string
+    # ie select from list 0th, 1st, 2nd, 3rd, 4th, etc
+    s = str(n)
+    s2 = ''
+    if n == 1: s2 = 'st' # 1st
+    elif n == 2: s2 = 'nd' # 2nd
+    elif n == 3: s2 = 'rd' # 3rd
+    else: s2 = 'th' # 0th, or 4th and up
+    string = s + s2
+    return string
+
 class GalifarDate:
     # Galifar Calendar (common calendar of Khorvaire)
     def __init__(self, d=1, m='Zarantyr', y=998):
         self.day = d
         self.month = m
         self.year = y
-    def disp(self, dofw=False, cal='Galifar'):
-        d = str(self.day)
-        y = str(self.year)
+    def disp(self, dofw=False, cal='Galifar', verbose=False):
+        # return the date as a string
+        if verbose:
+            dofw=True
+            d = ordinal(self.day)
+            y = ordinal(self.year)
+            epoch = ' Year of the Kingdom'
+        else:
+            d = str(self.day)
+            epoch = ' YK'
+            y = str(self.year)
         if cal=='Galifar': m = self.month
         elif cal=='Druidic': m = druidmonths[self.month]
         elif cal=='Dwarven': m = dwarfmonths[self.month]
         elif cal=='Talenta': m = talentamonths[self.month]
-        string = d + ' ' + m + ' ' + y + ' YK'
+        string = d + ' ' + m + ' ' + y + epoch
         if dofw:
             _d = self.day
             while _d > 7:
                 _d = _d - 7 # constrain day to range 1-7
             dw = daynames[_d-1]
-            print(dw + ', ' + string) # add day of week to date
-        else: print(string)
+            return dw + ', ' + string # add day of week to date
+        else: return string
     def days(self):
         # convert date to day of year
         dm = (Gm[self.month]-1)*M2D # elapsed months to days
@@ -267,19 +287,16 @@ class AereniDate:
         self.rueln = r
         self.nuerlnir = n
     def disp(self, verbose=False):
-        # print out the date to the command line
-        d = str(self.day)
-        if self.day == 1: d2 = 'st'
-        elif self.day == 2: d2 = 'nd'
-        elif self.day == 3: d2 = 'rd'
+        # return the date as a string
+        d = ordinal(self.day)
         t = str(self.tuern)
         l = str(self.luenir)
         th = str(self.thuelir)
         r = str(self.rueln)
         n = str(self.nuerlnir)
         string = t + '-' + l + '-' + th + '-' + r + '-' + n + ' NA'
-        if verbose: print(d + d2 + ' of ' + string) # add day to date
-        else: print(string)
+        if verbose: return d + ' of ' + string # add day to date
+        else: return string
     def days(self):
         # convert date to day of nuerlnir
         dr = self.rueln*R2D # elapsed ruelnai to days
@@ -308,18 +325,14 @@ class SovereignDate:
         self.season = s
         self.year = y
     def disp(self, fav=False):
-        # print out the date to the command line
-        w = str(self.week)
-        if self.week == 1: w2 = 'st'
-        elif self.week == 2: w2 = 'nd'
-        elif self.week == 3: w2 = 'rd'
-        else: w2 = 'th'
-        string1 = w+w2+' '
+        # return the date as a string
+        w = ordinal(self.week)
+        string1 = w+' '
         string2 = self.day+' of '+self.season+' '+str(self.year)+' YK'
         if fav:
             if Sf[self.day]==self.season:
                 string1 += 'Favored '
-        print(string1 + string2)
+        return string1 + string2
     def days(self):
         # convert date to day of year
         ds = (Ss[self.season]-1)*S2D # elapsed seasons to days
@@ -372,56 +385,54 @@ def sovereign2galifar(SK = SovereignDate()):
 
 #@jit(nopython=True, parallel=True)
 def galifar2sovereign(YK = GalifarDate()):
+    year = YK.year
     dayofyear = YK.days()
     offset = GalifarDate(m='Therendor').days() # the Sovereign year starts on 1 Therendor
     dayofyear = dayofyear - offset # day of year relative to Sovereign year start
-    if dayofyear<0: dayofyear = dayofyear+Y2D # wrap to previous year
+    if dayofyear<0: # wrap to previous year
+        dayofyear = dayofyear + Y2D
+        year = year - 1
     season = seasonnames[math.floor(dayofyear/S2D)]
     dayofseason = np.mod(dayofyear, S2D)
     week = math.floor(dayofseason/SW2D)+1
     dayofweek = np.mod(dayofseason, SW2D)
     day = sdaynames[dayofweek]
-    return SovereignDate(w=week, d=day, s=season, y=YK.year)
+    return SovereignDate(w=week, d=day, s=season, y=year)
 
 # TEST
     
 '''
 test1 = GalifarDate(d=20, m='Olarune', y=994)
-test1.disp(dofw=True, cal='Druidic')
+print(test1.disp(dofw=True, cal='Druidic'))
 print('day of year: '+str(test1.days()))
 print('GD '+str(test1.GD()))
 
 test2 = galifar2aereni(test1)
-test2.disp(True)
+print(test2.disp(True))
 print('day of nuerlnir: '+str(test2.days()))
 
 test3 = GD2date(test1.GD())
-test3.disp()
+print(test3.disp())
 
 test4 = aereni2galifar(test2)
-test4.disp()
+print(test4.disp())
 
 test5 = SovereignDate(s='Yeardeath')
-test5.disp(True)
+print(test5.disp(True))
 
 test6 = sovereign2galifar(test5)
-test6.disp(True)
+print(test6.disp(True))
 
 print(' ')
 test7 = aereni2galifar(galifar2aereni(GalifarDate()))
-test7.disp(True)
+print(test7.disp(True))
 
 test8 = galifar2aereni(aereni2galifar(AereniDate()))
-test8.disp(True)
+print(test8.disp(True))
 
 test9 = galifar2sovereign(sovereign2galifar(SovereignDate()))
-test9.disp(True)
+print(test9.disp(True))
 
 test10 = sovereign2galifar(galifar2sovereign(GalifarDate()))
-test10.disp(True)
+print(test10.disp(True))
 '''
-
-
-
-
-

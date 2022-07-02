@@ -184,7 +184,8 @@ print_hierarchy(root)
 root.mainloop()
 '''
 
-# tutorial 6
+# tutorial 6 - widget roundup
+'''
 root = Tk()
 
 # use ttk.Frame objects as containers
@@ -309,9 +310,182 @@ passwd = ttk.Entry(root, textvariable=password, show="*")
 # there is also an 'invalid' state, set if the entry widget fails validation
 
 # Validation
+# specify what makes an entry valid or invalid with the validatecommand option
+# supply a callback that returns T/F whether entry is valid
+import re # import regular expressions
+def check_num(newval):
+    return re.match('^[0-9]*$', newval) is not None and len(newval) <=5 # if False, value will not be changed
+check_num_wrapper = (root.register(check_num), '%P') # use percent substitution to pass the entry value to the callback
+
+num = StringVar()
+e = ttk.Entry(root, textvariable=num, validate='key', validatecommand=check_num_wrapper) # validation checked on keystrokes
+e.grid(column=0, row=0, sticky='we')
+
+# the above is prevalidation - checking changes on each keystroke
+# can also revalidate - only check changes when entry loses focus
+# add a message to explain format to call on error
+# can key a "process" button to be disabled unless revalidation passes
+errmsg = StringVar()
+formatmsg = "Zip should be ##### or #####-####"
+
+def check_zip(newval, op):
+    errmsg.set('')
+    valid = re.match('^[0-9]{5}(\-[0-9]{4})?$', newval) is not None
+    btn.state(['!disabled'] if valid else ['disabled'])
+    if op=='key': # if triggered by keystroke
+        ok_so_far = re.match('^[0-9\-]*$', newval) is not None and len(newval) <= 10
+        if not ok_so_far:
+            errmsg.set(formatmsg)
+        return ok_so_far
+    elif op=='focusout': # if triggered by leaving focus (there is also 'focusin' for entering focus)
+        if not valid:
+            errmsg.set(formatmsg)
+    return valid
+check_zip_wrapper = (root.register(check_zip), '%P', '%V') # trigger is passed to callback with the %V substitution
+
+zip = StringVar()
+f = ttk.Frame(root)
+f.grid(column=0, row=0)
+ttk.Label(f, text='Name:').grid(column=0, row=0, padx=5, pady=5)
+ttk.Entry(f).grid(column=1, row=0, padx=5, pady=5)
+ttk.Label(f, text='Zip:').grid(column=0, row=1, padx=5, pady=5)
+e = ttk.Entry(f, textvariable=zip, validate='all', validatecommand=check_zip_wrapper) # validation on all triggers, not just keystrokes
+e.grid(column=1, row=1, padx=5, pady=5)
+btn = ttk.Button(f, text='Process')
+btn.grid(column=2, row=1, padx=5, pady=5)
+btn.state(['disabled'])
+msg = ttk.Label(f, font='TkSmallCaptionFont', foreground='red', textvariable=errmsg)
+msg.grid(column=1, row=2, padx=5, pady=5, sticky='w')
+# if validatecommand callback causes an error, validation is disabled for that widget
+# can force widget to validate by calling its .validate method
+# there is also an 'invalidcommand' option to specify a callback for when validation fails
+# can also check an entry's 'invalid' state flag to check validation status
+# other precent substitutions:
+#   %s - get entry's contents prior to editing
+#   %d - differentiate between insert and delete
+#   %i - where an insert or delete occurs
+#   %s - what is being inserted or deleted
+#   %v - current setting of the 'validate' option
+#   %w - name of the widget
+
+# Combobox widget combines entry with a list of choices
+# can choose from set of values or put in custom value
+countryvar = StringVar()
+country = ttk.Combobox(root, textvariable=countryvar)
+# combobox generates <<ComboboxSelected>> virtual event for when its value changes
+# can also check changes on textvariable, but the event is more straightforward
+def function(entry):
+    entry.selection_clear() # clear when value changes if in readonly mode
+country.bind('<<ComboboxSelected>>', function(country))
+country['values'] = ('USA', 'Canada', 'Australia') # list of values
+country.state(["readonly"]) # restricts users to predefined values
+print(country.get())
+country.set('USA')
+print(country.get())
+print(country.current()) # returns 0-based index with no arguments. returns specific value if given index
 
 for child in root.winfo_children(): 
             child.grid() # draw all children
+
+print_hierarchy(root)
+root.mainloop()
+'''
+
+# tutorial 7 - grid geometry manager
+# grid is the best choice for general use - columns & rows
+# pack is also powerful but harder to use
+# place gives complete control of positioning each element
+
+root = Tk()
+# in grid, widgets are assigned a 'column' number and a 'row' number
+# positive integers, don't have to start at 0 and can leave gaps to add more later
+# width & height vary depending on dimensions of widgets
+# widgets can take up multiple cells with 'columnspan' and 'rowspan'
+# LAYOUT
+#   by default, a widget is centered horizontally and vertically in a cell
+#   the empty space around a widget displays the color of the widget's parent
+#   the 'sticky' option sticks the widget, including its background, to the edge
+#       specify with a string 'nsew' or a list (N, S, E W)
+#       most widgets, like label, have an 'anchor' option for where the text is attached (also 'nsew')
+#   if having difficulty with a widget's size, change its background color to see more easily
+# RESIZING
+#   widget's don't resize unless you tell them to
+#   each col and row has a 'weight' option, default = 0 (don't expand to fill extra space)
+#   specify a positive weight for at least one column and one row
+#   use the 'columnconfigure' and 'rowconfigure' methods of grid
+#   weight is relative - two columns with same weight expand at same rate
+#   both colconfigure and rowconfigure take a 'minsize' option, widget won't shrink smaller
+# PADDING
+#   by default, each col & row are directly adjacent, so widgets are right next to each other
+#   adding space in between widgets is called padding, which can be done several ways
+#   a widget's own options can add extra space, such as the frame widget
+#       this is a good reason to make a frame the parent of all other widgets
+#       frame's 'padding' option specifies extra space inside frame
+#       can be same or different for each of the four sides
+#   can also use 'padx' and 'pady' grid options when adding the widget
+#       padx is top & bottom, pady is left & right
+#       a single value puts the same on both, a two-value list lets you put different amounts on each
+#   can also add padding around entire row or column
+#       use the 'pad' option with columnconfigure and rowconfigure methods
+#   less used is "internal padding" via grid options 'ipadx' and 'ipady'
+#       ex: 20x20 frame, (external) padding 5:
+#               requests 20x20 rectangle from grid
+#               granted 20x20 rectangle surrounded by 5-pixel border
+#           20x20 frame, (internal) padding 5:
+#               widget effectively requests 30x30 rectangle
+#               if frame centered or attached to a single side or corner:
+#                   20x20 frame with extra space around it
+#               if frame set to stretch (sticky we, ns, or nsew):
+#                   fills extra space, results in 30x30 with no border
+# QUERYING AND CHANGING
+#   using the .grid_slaves() method on a widget object returns all the widgets gridded inside it
+#       can also specify a row or column
+#       ie widget.grid_slaves(row=3)
+#   using the .grid_info() method on a widget object returns a list of all grid options & their values
+#   use the .grid_configure() method to change a grid option on a widget
+#       ie widget.grid_configure(sticky=(E,W))
+# FORGET AND REMOVE
+#   calling the .forget() method of grid removes children from grid
+#       input list of one or more children, takes them off the screen
+#       can grid them again later, but any grid options must be set again
+#   the .remove() method of grid is the same but REMEMBERS grid options
+# NESTED LAYOUTS
+#   nice to keep independent areas of interface contained in separate frames
+#   easy to place these frames in a mainframe, rearrange, and reuse
+#   can import a frame from one module into another and simply add to mainframe
+content = ttk.Frame(root, padding=(3,3,12,12))
+frame = ttk.Frame(content, borderwidth=5, relief="ridge", width=200, height=200)
+namelbl = ttk.Label(content, text="Name")
+name = ttk.Entry(content)
+
+onevar = BooleanVar(value=True)
+twovar = BooleanVar(value=False)
+threevar = BooleanVar(value=True)
+
+one = ttk.Checkbutton(content, text="One", variable=onevar, onvalue=True)
+two = ttk.Checkbutton(content, text="Two", variable=twovar, onvalue=True)
+three = ttk.Checkbutton(content, text="Three", variable=threevar, onvalue=True)
+ok = ttk.Button(content, text="Okay")
+cancel = ttk.Button(content, text="Cancel")
+
+content.grid(column=0, row=0, sticky=(N, S, E, W))
+frame.grid(column=0, row=0, columnspan=3, rowspan=2, sticky='nsew')
+namelbl.grid(column=3, row=0, columnspan=2, sticky='nw', padx=5)
+name.grid(column=3, row=1, columnspan=2, sticky='nwe', pady=5, padx=5)
+one.grid(column=0, row=3)
+two.grid(column=1, row=3)
+three.grid(column=2, row=3)
+ok.grid(column=3, row=3)
+cancel.grid(column=4, row=3)
+
+root.columnconfigure(0, weight=1)
+root.rowconfigure(0, weight=1)
+content.columnconfigure(0, weight=3)
+content.columnconfigure(1, weight=3)
+content.columnconfigure(2, weight=3)
+content.columnconfigure(3, weight=1)
+content.columnconfigure(4, weight=1)
+content.rowconfigure(1, weight=1)
 
 print_hierarchy(root)
 root.mainloop()
