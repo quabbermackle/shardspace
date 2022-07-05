@@ -14,15 +14,16 @@ Y2D = 336 # Khorvaire year to days
 M2D = 28 # Khorvaire month to days
 W2D = 7 # Galifar week to days
 T2D = 3 # Aerenal tuern to days
-L2D = 21*T2D # Aerenal luenir to days (63)
-TH2D = 12*L2D # Aerenal thuelir to days (756 = 1 Xendrik year)
-R2D = 3*TH2D # Aerenal rueln to days (2268)
-N2D = 2*R2D # Aerenal nuerlnir to days (4536)
+L2D = 21*T2D # Aerenal luenir to days (63) (12 per Xendrik year)
+TH2D = 12*L2D # Aerenal thuelir to days (756 = 1 Xendrik year, 2.25 Khorvaire years)
+R2D = 3*TH2D # Aerenal rueln to days (2268) (6.75 Khorvaire years)
+N2D = 2*R2D # Aerenal nuerlnir to days (4536) (6 Xendrik years, 13.5 Khorvaire years)
 S2D = 112 # Sovereign season to days
 SW2D = 16 # Sovereign week to days
 WC2D = 3 # Quor Tarai waking cycle to days
 SC2D = 14 # Quor Tarai sleeping cycle to days
 DR2D = 5 # kalashtar Days of Remembrance to days
+Y2DDR = 67*DR2D # kalashtar year, 67 Days of Remembrance
 Y2DHARP = 365 # Toril, Harptos calendar year to days
 M2DHARP = 30 # Toril, Harptos calendar month to days
 W2DHARP = 10 # Toril, Harptos calendar week (tenday) to days
@@ -44,6 +45,202 @@ REMEMBRANCE = DR2D*const.day # one Days of Remembrance period, sec
 YEARHARP = Y2DHARP*const.day # one Toril year, sec
 MONTHHARP = M2DHARP*const.day # one Toril month, sec
 WEEKHARP = W2DHARP*const.day # one Toril week (tenday), sec
+
+caldesc = {'Galifar': """
+               In the common calendar of Khorvaire, days are 24
+               hours long, divided into day and night. Seven days make
+               up a week, four weeks a month, and twelve months a
+               year. The months correspond to the twelve moons of
+               Eberron, and the prominent moon carries the name of the
+               month in which its orbit brings it closest to the planet.
+               The seven days of the week, in order, are Sul, Mol,
+               Zol, Wir, Zor, Far, Sar.
+               The common calendar of Khorvaire tracks the years
+               since the founding of the kingdom of Gali far, using
+               the abbreviation YK. The last king of Galifar, Jarot
+               ir'Wynarn, died on 1 2 Therendor 894 YK. The Day of
+               Mourning occurred a century later, on 20 Olarune 994
+               YK. Our Eberron campaign begins on 1 Zarantyr 998 YK.
+               
+               Month    Name
+               ----------------------------------
+               1        Zarantyr (mid-winter)
+               2        Olarune (late winter)
+               3        Therendor (early spring)
+               4        Eyre (mid-spring)
+               5        Dravago (late spring)
+               6        Nymm (early summer)
+               7        Lharvion (mid-summer)
+               8        Barrakas (late summer)
+               9        Rhaan (early autumn)
+               10       Sypheros (mid-autumn)
+               11       Aryth (late autumn)
+               12       Vult (early winter)
+               
+               Eberron - Rising from the Last War, p.7
+               
+               GM's note:
+               One Khorvaire year equals one orbit around Arrah, and
+               is 336 days long, which is 92% of an Earth year.
+               A 20-year old Khorvairian would be 18.4 years old by
+               Earth reckoning. The Code of Galifar recognizes
+               adulthood at 20.
+               """,
+           'Gatekeeper': '',
+           'Mror': '',
+           'Talenta': '',
+           'Aereni': """
+               The Aereni calendar is a strange affair, practically
+               unreadable to anyone not raised with it. It measures
+               time in repeating cycles. For instance, while the calendar
+               acknowledges the concept of “days,” they are not considered
+               important measurements of time in their own
+               right. Rather, they are the component parts to overlapping
+               cycles called tuernai (singular tuern), which consist of
+               three days each and are the primary unit of measurement
+               on the Aereni calendar. A similar overlapping cycle of
+               twenty-one tuernai equals a luenir, roughly three months
+               on the Galifar calendar. This process continues, with
+               luenirai overlapping to eventually form the Aereni year,
+               years forming cycles called ruelnai, and ruelnai forming
+               nuerlnirai (roughly analogous to a decade). Only then does
+               the calendar restart. Specific holidays vary by family and
+               the deathdays of ancestors.
+               
+               The Khorvaire year is 336 days (one orbit around Arrah).
+               The Aerenal year is 756 days, which is 2.25 Khorvaire years
+               (2 years 3 months). The Aereni measure this as one thuelir.
+               
+               The Aereni calendar counts the number of nuerlnirai since
+               their ancestors made landfall on Aerenal as they fled
+               the destruction of Xen'drik. Aeren Kriaddal, the oracle
+               whose visions catalyzed the effort, did not live to see
+               their new home. The elves named the planetoid Aerenal
+               in their honor, and abbreviate their calendar as "NA",
+               "Nuerlnir of Aeren".
+               
+               Our campaign starts on 1 Zarantyr 998 YK, which is:
+               the 2nd of 7-9-2-1-2962 NA
+               2nd day, 7th tuern, 9th luenir, 2nd thuelir, 1st rueln
+               in the 2962nd nuerlnir of Aeren
+               
+               Unit     Equivalent   Days   Note
+               ----------------------------------------------------------------
+               Tuern                 3      252 per Aereni year
+               Luenir   21 tuernai   63     12 per Aereni year
+               Thuelir  12 luenirai  756    1 Aereni year, 2.25 Khorvaire years
+               Rueln    3 thuelirai  2268   6.75 Khorvaire years (6y 9mo)
+               Nuerlnir 2 ruelnai    4536   6 Aereni years, 13.5 Khorvaire years
+               
+               -Faiths of Eberron, p.141
+               """,
+           'Sovereign': """
+               Worship of the Sovereign Host predates the formation
+               of the great kingdom of Galifar. Thus, while all Vassals
+               use the standard Galifar calendar in day-to-day
+               life, they measure days of religious significance on
+               the far older Sovereign Book of Seasons (or simply the
+               Sovereign calendar).
+               The original Vassals divided the year into three
+               seasons, rather than four. Yearbirth, the first season,
+               was associated with the dragon Siberys. Yeargrowth, the
+               second season, was associated with Eberron. Finally,
+               Yeardeath was associated with Khyber.
+               Each season was divided into seven “weeks” of sixteen
+               days each. Each day of the week was devoted to one of the
+               fifteen gods of the original Sovereign Host, with an
+               additional day at the end of the week devoted to the
+               pantheon as a single unit.
+               Additionally, each god has a favored season during
+               which their festivals are particularly important.
+               In the modern era, the names of the days formerly
+               devoted to the Dark Six have been renamed after the
+               Five Kingdoms and Galifar itself.
+               The new year on the Sovereign calendar corresponds
+               with the first day of the month of Therendor on the
+               Galifar calendar.
+               The weeks do not carry any names of their own. To
+               indicate a specific day, someone using the Sovereign
+               calendar adds a numeric value to the day in question.
+               For instance, saying “Yearbirth Thranday the fourth”
+               or “fourth Thranday of Yearbirth” indicates Thranday
+               during the fourth week of the Yearbirth season.
+               
+               Day of the       Associated              Favored
+               Celestial Week   Deity                   Season
+               ---------------------------------------------------
+               Aureday          Aureon                  Yeargrowth
+               Karrnday         (Formerly the Fury)     Yeargrowth
+               Kolday           Kol Korran              Yearbirth
+               Baliday          Balinor                 Yeargrowth
+               Thranday         (Formerly the Mockery)  Yeardeath
+               Olladay          Olladra                 Yearbirth
+               Galday           (Formerly the Shadow)   Yeardeath
+               Bolday           Boldrei                 Yeargrowth
+               Brelday          (Formerly the Keeper)   Yeardeath
+               Onaday           Onatar                  Yearbirth
+               Araday           Arawai                  Yearbirth
+               D’arrday         Dol Arrah               Yeargrowth
+               Aunday           (Formerly the Traveler) Yearbirth
+               Dornday          Dol Dorn                Yeardeath
+               Cyrday           (Formerly the Devourer) Yeardeath
+               Hostday          The Sovereign Host      Yearbirth
+               
+               Faiths of Eberron, p.21-22
+               """,
+           'Qabalrin': """
+               The Blood of Vol has been around since long before the
+               formation of Galifar, and thus does not use the standard
+               calendar to mark either religious observances or the passage
+               of time. The faith follows the oldest active calendar
+               on Eberron, called the Qabalrin Wheel. Named after
+               the elf civilization that developed it on Xen’drik millennia
+               ago, it was the only calendar of record for much of
+               Eberron’s early history. Like its modern counterpart, the
+               Qabalrin Wheel is divided into months that correspond
+               to the moons of Eberron, but unlike the Galifar calendar,
+               it still recognizes the thirteenth moon (believed
+               lost to the cosmos when the giants sealed off the plane of
+               Xoriat so many centuries ago). The Wheel has thirteen
+               months rather than the standard twelve, with the last—
+               Crya, associated with the lost Mark of Death—coming
+               after Vult and before Zarantyr on the Galifar calendar.
+               This renders the Qabalrin Wheel year one month longer
+               than the Galifar year.
+               The Blood of Vol liturgical calendar reckons time
+               from the year when the House of Vol was betrayed, forcing
+               its last scion into an eternity of undeath. To Seekers in the
+               know, 998 YK corresponds to 2398 FH (the 2398th year
+               since the Fall of the House). Many Seekers do not use this
+               convention, of course, and even those who do still use the
+               Galifar calendar for dealings outside the faith.
+               
+               Faiths of Eberron, p.80
+               """,
+           'Adar': """
+               In the private lives of all kalashtar and lightspeakers,
+               wherever they live, a year consists of sixty-seven periods
+               of five days each. Each ancestor quori has five of its own
+               Days of Remembrance, with the Void of Taratai coming
+               last in the sequence. This calendar was established just
+               after the exodus, when the fugitive quori fled into Adar,
+               and it did not take into account the regular celestial
+               events of Eberron.
+               Among the people of Adar and Khorvaire, the
+               kalashtar use the usual calendar. They still practice Days
+               of Remembrance, but these days shift in the year to keep
+               time with a cycle that doesn’t contain 335 days. Only
+               the Void of Taratai observances are regular in Adar and
+               Khorvaire, set when the last of Taratai’s line disappeared
+               from Adar—at the end of Zarantyr and the beginning of
+               Olarune. The other Days of Remembrance are observed
+               privately as they occur, except when they overlap the
+               Void. Any such period is interrupted by those fi ve days,
+               restarting after they end.
+               
+               -Faiths of Eberron, p.129
+               """
+          }
 
 Gm = {'Zarantyr': 1,
       'Olarune':  2,
@@ -80,7 +277,7 @@ druidmonths = {'Zarantyr': 'Frostmantle',
                'Rhaan':    'Stormborn',
                'Sypheros': 'Harrowfall',
                'Aryth':    'Silvermoon',
-               'Vult':     'Windwhisper'} # druidic month names
+               'Vult':     'Windwhisper'} # Gatekeeper (druidic) month names
 dwarfmonths = {'Zarantyr': 'Aruk',
                'Olarune':  'Lurn',
                'Therendor':'Ulbar',
@@ -92,7 +289,7 @@ dwarfmonths = {'Zarantyr': 'Aruk',
                'Rhaan':    'Razagul',
                'Sypheros': 'Thazm',
                'Aryth':    'Drakhadur',
-               'Vult':     'Uarth'} # dwarven month names
+               'Vult':     'Uarth'} # Mror (dwarven) month names
 talentamonths = {'Zarantyr': 'Fang',
                  'Olarune':  'Wind',
                  'Therendor':'Ash',
@@ -231,12 +428,29 @@ def ordinal(n=0):
     # ie select from list 0th, 1st, 2nd, 3rd, 4th, etc
     s = str(n)
     s2 = ''
-    if n == 1: s2 = 'st' # 1st
-    elif n == 2: s2 = 'nd' # 2nd
-    elif n == 3: s2 = 'rd' # 3rd
+    if abs(n)>20: # handle numbers >20 recursively
+        s2 = ordinal(np.mod(abs(n), 10))[1:]
+    elif abs(n) == 1: s2 = 'st' # 1st
+    elif abs(n) == 2: s2 = 'nd' # 2nd
+    elif abs(n) == 3: s2 = 'rd' # 3rd
     else: s2 = 'th' # 0th, or 4th and up
     string = s + s2
     return string
+
+def val2key(d, val):
+    # search {'string': int} dictionary backwards
+    # given value val, return matching key from d
+    return list(d.keys())[list(d.values()).index(val)]
+
+def wrap(x, y, xmax, base=0):
+    # wrap number in x into y given max value of x, xmax
+    # base is min number in set, ie [base, base+1, ... xmax-1, xmax]
+    if x > xmax:
+        _y, xnew = np.divmod(x, xmax)
+        ynew = y + _y
+        #xnew += base
+        return xnew, ynew
+    else: return x, y
 
 class GalifarDate:
     # Galifar Calendar (common calendar of Khorvaire)
@@ -256,8 +470,8 @@ class GalifarDate:
             epoch = ' YK'
             y = str(self.year)
         if cal=='Galifar': m = self.month
-        elif cal=='Druidic': m = druidmonths[self.month]
-        elif cal=='Dwarven': m = dwarfmonths[self.month]
+        elif cal=='Gatekeeper': m = druidmonths[self.month]
+        elif cal=='Mror': m = dwarfmonths[self.month]
         elif cal=='Talenta': m = talentamonths[self.month]
         string = d + ' ' + m + ' ' + y + epoch
         if dofw:
@@ -276,10 +490,34 @@ class GalifarDate:
         # number of days since 1 Zarantyr 0 YK
         dY = self.year*Y2D # GD of 1 Zarantyr, current year
         return dY + self.days()
+    def increment(self, d=1, m=0, y=0):
+        # add specified amount of time to current date
+        self.day += d
+        if self.day > 28:
+            _m, _d = np.divmod(self.day, 28)
+            self.day = _d
+            m += _m
+        mnum = Gm[self.month]
+        mnew = mnum + m
+        if mnew > 12:
+            _y, _m = np.divmod(mnew, 12)
+            self.year += _y
+            self.month = val2key(Gm, _m)
+        else: self.month = val2key(Gm, mnew)
+        self.year += y
+    def add_day(self, days=1):
+        # wrapper for self.increment()
+        self.increment(d=days)
+    def add_month(self, months=1):
+        # wrapper for self.increment()
+        self.increment(d=0, m=months)
+    def add_year(self, years=1):
+        # wrapper for self.increment()
+        self.increment(d=0, y=years)
 
 class AereniDate:
     # Aerenal Calendar (Qabalrin Wheel?)
-    def __init__(self, d=1, t=7, l=9, th=2, r=1, n=2962):
+    def __init__(self, d=2, t=7, l=9, th=2, r=1, n=2999):
         self.day = d
         self.tuern = t
         self.luenir = l
@@ -290,13 +528,26 @@ class AereniDate:
         # return the date as a string
         d = ordinal(self.day)
         t = str(self.tuern)
+        t_o = ordinal(self.tuern)
         l = str(self.luenir)
+        l_o = ordinal(self.luenir)
         th = str(self.thuelir)
+        th_o = ordinal(self.thuelir)
         r = str(self.rueln)
+        r_o = ordinal(self.rueln)
         n = str(self.nuerlnir)
+        n_o = ordinal(self.nuerlnir)
+        # standard date: 2nd of 7-9-2-1-2962 NA
         string = t + '-' + l + '-' + th + '-' + r + '-' + n + ' NA'
-        if verbose: return d + ' of ' + string # add day to date
-        else: return string
+        string = d + ' of ' + string # add day to date
+        # verbose date:
+        # 2nd day, 7th tuern, 9th luenir, 2nd thuelir, 1st rueln
+        # in the 2962nd nuerlnir of Aeren
+        vstr = d + ' day, ' + t_o + ' tuern, ' + l_o + ' luenir, '
+        vstr += th_o + ' thuelir, ' + r_o + ' rueln in the '
+        vstr += n_o + ' nuerlnir of Aeren'
+        if verbose: return vstr # verbose date format
+        else: return string # standard date format
     def days(self):
         # convert date to day of nuerlnir
         dr = self.rueln*R2D # elapsed ruelnai to days
@@ -307,7 +558,7 @@ class AereniDate:
     def AD(self):
         # Aerenalian day (similar to Julian Day)
         # number of days since 1 1-1-1-1-0 NA
-        dN = self.nuerlnir*N2D # AD of 1st day of current year
+        dN = self.nuerlnir*N2D # AD of 1st day of current nuerlnir
         return dN + self.days()
     def GD(self):
         # Galifaran day (similar to Julian Day)
@@ -315,11 +566,24 @@ class AereniDate:
         Y0 = galifar2aereni(GalifarDate(y=0)) # year 0 YK in the Aereni calendar
         GD = self.AD() - Y0.AD() + 1 # days since Y0
         return GD
+    def increment(self, d=1, t=0, l=0, th=0, r=0, n=0):
+        # add specified amount of time to current date
+        self.day += d
+        self.day, self.tuern = wrap(self.day, self.tuern, 3, 1)
+        self.tuern += t
+        self.tuern, self.luenir = wrap(self.tuern, self.luenir, 21, 1)
+        self.luenir += l
+        self.luenir, self.thuelir = wrap(self.luenir, self.thuelir, 12, 1)
+        self.thuelir += th
+        self.thuelir, self.rueln = wrap(self.thuelir, self.rueln, 3, 1)
+        self.rueln += r
+        self.rueln, self.nuerlnir = wrap(self.rueln, self.nuerlnir, 2, 1)
+        self.nuerlnir += n
     
 class SovereignDate:
     # Sovereign Book of Seasons (old Sarlonan - Pyrine)
     # celebrates the Celestial Week
-    def __init__(self, w=1, d='Aureday', s='Yearbirth', y=998):
+    def __init__(self, w=4, d='Brelday', s='Yeardeath', y=998):
         self.week = w
         self.day = d
         self.season = s
@@ -357,7 +621,7 @@ def GD2date(GD = GalifarDate().GD()):
 
 #@jit(nopython=True, parallel=True)    
 def galifar2aereni(YK = GalifarDate()):
-    dA = 40000*Y2D # years since landing on Aeren in days
+    dA = (40499*Y2D) + (6*M2D) # days since landing on Aeren
     dY = (YK.year-998)*Y2D # years from 998 YK in days
     dM = (Gm[YK.month]-1)*M2D # months from year start in days
     _day = dA + dY + dM + YK.day # total days since landing on Aeren
@@ -391,7 +655,6 @@ def galifar2sovereign(YK = GalifarDate()):
     dayofyear = dayofyear - offset # day of year relative to Sovereign year start
     if dayofyear<0: # wrap to previous year
         dayofyear = dayofyear + Y2D
-        year = year - 1
     season = seasonnames[math.floor(dayofyear/S2D)]
     dayofseason = np.mod(dayofyear, S2D)
     week = math.floor(dayofseason/SW2D)+1
@@ -401,9 +664,12 @@ def galifar2sovereign(YK = GalifarDate()):
 
 # TEST
     
+#test = GalifarDate()
+#test.add_month()
+
 '''
 test1 = GalifarDate(d=20, m='Olarune', y=994)
-print(test1.disp(dofw=True, cal='Druidic'))
+print(test1.disp(dofw=True, cal='Gatekeeper'))
 print('day of year: '+str(test1.days()))
 print('GD '+str(test1.GD()))
 

@@ -18,8 +18,8 @@ debug = True
 
 # supported calendar options
 calendars = ('Galifar',
-             'Druidic',
-             'Dwarven',
+             'Gatekeeper',
+             'Mror',
              'Talenta',
              'Aereni',
              'Sovereign')
