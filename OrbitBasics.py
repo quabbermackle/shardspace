@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt # used for testing
 #from numba import jit
 
 import NumericalAnalysis as na
+import MatlabOrbits as mob
 
 ## CONSTANTS ------------------------------------------------------------------
 
@@ -71,6 +72,47 @@ Sol_names = ['Mercury',
 ## ----------------------------------------------------------------------------
 ## CONVERSION & MISC FUNCTIONS
 ## ----------------------------------------------------------------------------
+
+def parse_datestr(string='00:00:00.0 am'):
+    """
+    parse date from string input
+    """
+    if string.split(' ')[0] != string: # true if there is a space
+        if string.split(' ')[1] in ['a', 'A', 'am', 'AM']: ap = 'am'
+        elif string.split(' ')[1] in ['p', 'P', 'pm', 'PM']: ap = 'pm' 
+        is24 = False
+        string = string.split(' ')[0] # discard am/pm
+    elif string.split('a')[0] != string: # true if there is an 'a'
+        ap = 'am'
+        is24 = False
+        string = string.split('a')[0] # discard am/pm
+    elif string.split('p')[0] != string:  # true if there is a 'p'
+        ap = 'pm'
+        is24 = False
+        string = string.split('p')[0] # discard am/pm
+    else: # no am or pm supplied, must be 24hr format
+        ap = ''
+        is24 = True
+    
+    ls = string.split(':') # split by colon
+    h = int(ls[0]) # hours
+    m = int(ls[1]) # minutes
+    if len(ls) > 2: # true if seconds supplied
+        s = float(ls[2]) # seconds (handles ss and ss.s)
+    else:
+        s = 0. # 0 seconds if not supplied
+    if len(ls) == 4: # true if hundredths of a second supplied as ss:ss
+        s += float(ls[3])/100 # add hundredths to seconds
+        
+    return h, m, s, ap, is24
+
+def fd_str(string):
+    """
+    calculate fractional day from string
+    """
+    h, m, s, ap, is24 = parse_datestr(string)
+    frac = mob.frac_day(h, m, s, ap, is24)
+    return frac
 
 #@jit(nopython=True, parallel=True)
 def ang_diam(d, D):
@@ -593,3 +635,17 @@ ax.plot(rv[:,0], rv[:,1], '.-')
 ax.set_aspect('equal')
 #plt.show()
 '''
+
+test1 = mob.juliandate(2022, 7, 16, 19, 0, 0)
+print(test1)
+test2 = mob.JulianDay(2022, 7, 16)
+print(test2)
+test3 = mob.JD2Cal(test1)
+print(test3)
+test4 = mob.JD2Cal(test2)
+print(test4)
+
+
+
+
+
