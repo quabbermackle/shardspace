@@ -1149,14 +1149,14 @@ def ex2_5():
     print('semiparameter        p       = ', p, ' km (correct = 11,067.79 km)')
     print('semimajor axis       a       = ', a, ' km (correct = 36127.343 km)')
     print('eccentricity         ecc     = ', ecc, ' (correct = 0.832853)')
-    print('inclination          incl    = ', incl, ' deg (correct = 87.87 deg)')
-    print('right ascension      omega   = ', omega, ' deg (correct = 227.898 deg)')
-    print('argument of perigee  argp    = ', argp, ' deg (correct = 53.38 deg)')
-    print('true anomaly         nu      = ', nu, ' deg (correct = 92.335 deg)')
+    print('inclination          incl    = ', incl*rad, ' deg (correct = 87.87 deg)')
+    print('right ascension      omega   = ', omega*rad, ' deg (correct = 227.898 deg)')
+    print('argument of perigee  argp    = ', argp*rad, ' deg (correct = 53.38 deg)')
+    print('true anomaly         nu      = ', nu*rad, ' deg (correct = 92.335 deg)')
     print('                     m       = ', m)
-    print('argument of latitude arglat  = ', arglat, ' deg (correct = 145.60549 deg)')
-    print('true longitude       truelon = ', truelon, ' deg (correct = 55.282587 deg)')
-    print('longitude of perigee lonper  = ', lonper, 'deg (correct = 281.27 deg)')
+    print('argument of latitude arglat  = ', arglat*rad, ' deg (correct = 145.60549 deg)')
+    print('true longitude       truelon = ', truelon*rad, ' deg (correct = 55.282587 deg)')
+    print('longitude of perigee lonper  = ', lonper*rad, 'deg (correct = 281.27 deg)')
     
     return p, a, ecc, incl, omega, argp, nu, m, arglat, truelon, lonper
 
@@ -1487,8 +1487,8 @@ def ex5_1():
     """
 
         
-
-#ex2_5()
+if __name__ == "__main__":
+    ex2_5()
 
 
 

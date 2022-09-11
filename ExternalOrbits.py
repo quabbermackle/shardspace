@@ -66,25 +66,25 @@ def julian_date_to_gregorian(jd):
 """
 TESTING------------------------------------------------------------------------
 """
-"""
-today = date(year=2020, month=12, day=7)
-jdn = gregorian_to_julian_day_number(today.month, today.day, today.year)
-print(today)
-print(jdn)
 
-evening = datetime.combine(today, time(hour=18, minute=12, second=43, microsecond=674805), tzinfo=timezone.utc)
-print(evening)
-jdt_evening = gregorian_to_julian_date(evening)
-print(jdt_evening)
-morning = evening.replace(hour=6, minute=0, second=0, microsecond=0)
-print(morning)
-jdt_morning = gregorian_to_julian_date(morning)
-print(jdt_morning)
-
-gregorian_evening = julian_date_to_gregorian(jdt_evening)
-print(gregorian_evening)
-gregorian_morning = julian_date_to_gregorian(jdt_morning)
-print(gregorian_morning)
-
-print(julian_day_number_to_gregorian(0))
-"""
+if __name__ == "__main__":
+    today = date(year=2020, month=12, day=7)
+    jdn = gregorian_to_julian_day_number(today.month, today.day, today.year)
+    print(today)
+    print(jdn)
+    
+    evening = datetime.combine(today, time(hour=18, minute=12, second=43, microsecond=674805), tzinfo=timezone.utc)
+    print(evening)
+    jdt_evening = gregorian_to_julian_date(evening)
+    print(jdt_evening)
+    morning = evening.replace(hour=6, minute=0, second=0, microsecond=0)
+    print(morning)
+    jdt_morning = gregorian_to_julian_date(morning)
+    print(jdt_morning)
+    
+    gregorian_evening = julian_date_to_gregorian(jdt_evening)
+    print(gregorian_evening)
+    gregorian_morning = julian_date_to_gregorian(jdt_morning)
+    print(gregorian_morning)
+    
+    print(julian_day_number_to_gregorian(0))

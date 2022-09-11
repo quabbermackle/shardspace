@@ -1,0 +1,13 @@
+Microsoft MPI
+
+Python:
+einsteinpy
+astropy
+mpi4py (requires MPI)
+pararealml
+https://github.com/pierrechristian/FANTASY
+https://github.com/pymgrit/pymgrit
+
+C/C++:
+https://github.com/drons/nbody
+https://github.com/luxsrc/gray

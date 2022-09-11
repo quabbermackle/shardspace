@@ -189,7 +189,7 @@ def COEs_rad(r0, v0, mu=398600., use_h=False):
     vmag = np.linalg.norm(v0)
     
     # Energy
-    E = (v**2)/2 - (mu/r) # km^2/s^2
+    E = (vmag**2)/2 - (mu/rmag) # km^2/s^2
     
     # Semimajor Axis
     a = -mu / (2*E) # km
@@ -301,50 +301,54 @@ def Czcalc_rad(psid):
 TESTING------------------------------------------------------------------------
 """
 
-'''
-coes = COEs_rad([7000, 1, -1], [0.001, np.sqrt(398600/7000), -0.001])
-print('coes = ', coes)
-
-r, v = COEs_to_Inertial_rad(coes)
-print('r = ', r)
-print('v = ', v)
-'''
-
-# Vallado ex 2-5
-r_IJK = np.array([6524.834, 6862.875, 6448.296]) # position, ECI, km
-v_IJK = np.array([4.901327, 5.533756, -1.976341]) # velocity, ECI, km/s
-mu = 398600
-
-coe = COEs_rad(r_IJK, v_IJK, mu)
-h = coe[0]
-ecc = coe[1]
-inc = coe[2]
-RAAN = coe[3]
-omega = coe[4]
-theta = coe[5]
-
-r = np.linalg.norm(r_IJK)
-v = np.linalg.norm(v_IJK)
-E = (v**2)/2 - (mu/r) # km^2/s^2
-a = -mu / (2*E) # km
-
-print('r_ECI = ', r_IJK, ' km')
-print('v_ECI = ', v_IJK, ' km/s')
-print('r = ', r, 'km (correct = 11456.57 km)')
-print('v = ', v, 'km/s (correct = 7.651888 km/s)')
-print('angular momentum     h       = ', h, 'km^2/s (correct = 66420.1 km^2/s)')
-#print('semiparameter        p       = ', p, ' km (correct = 11,067.79 km)')
-print('semimajor axis       a       = ', a, ' km (correct = 36127.343 km)')
-print('eccentricity         ecc     = ', ecc, ' (correct = 0.832853)')
-print('inclination          inc     = ', inc*RAD2DEG, ' deg (correct = 87.87 deg)')
-print('right ascension      RAAN    = ', RAAN*RAD2DEG, ' deg (correct = 227.898 deg)')
-print('argument of perigee  omega   = ', omega*RAD2DEG, ' deg (correct = 53.38 deg)')
-print('true anomaly         theta   = ', theta*RAD2DEG, ' deg (correct = 92.335 deg)')
-#print('                     m       = ', m)
-#print('argument of latitude arglat  = ', arglat, ' deg (correct = 145.60549 deg)')
-#print('true longitude       truelon = ', truelon, ' deg (correct = 55.282587 deg)')
-#print('longitude of perigee lonper  = ', lonper, 'deg (correct = 281.27 deg)')
-
+if __name__ == "__main__":
+    '''
+    coes = COEs_rad([7000, 1, -1], [0.001, np.sqrt(398600/7000), -0.001])
+    print('coes = ', coes)
+    
+    r, v = COEs_to_Inertial_rad(coes)
+    print('r = ', r)
+    print('v = ', v)
+    '''
+    
+    # Vallado ex 2-5
+    r_IJK = np.array([6524.834, 6862.875, 6448.296]) # position, ECI, km
+    v_IJK = np.array([4.901327, 5.533756, -1.976341]) # velocity, ECI, km/s
+    mu = 398600
+    
+    coe = COEs_rad(r_IJK, v_IJK, mu, use_h=True)
+    h = coe[0]
+    ecc = coe[1]
+    inc = coe[2]
+    RAAN = coe[3]
+    omega = coe[4]
+    theta = coe[5]
+    
+    r = np.linalg.norm(r_IJK)
+    v = np.linalg.norm(v_IJK)
+    E = (v**2)/2 - (mu/r) # km^2/s^2
+    a = -mu / (2*E) # km
+    
+    rnew, vnew = COEs_to_Inertial_rad(coe)
+    
+    print('r_ECI = ', r_IJK, ' km')
+    print('v_ECI = ', v_IJK, ' km/s')
+    print('r = ', r, 'km (correct = 11456.57 km)')
+    print('v = ', v, 'km/s (correct = 7.651888 km/s)')
+    print('angular momentum     h       = ', h, 'km^2/s (correct = 66420.1 km^2/s)')
+    #print('semiparameter        p       = ', p, ' km (correct = 11,067.79 km)')
+    print('semimajor axis       a       = ', a, ' km (correct = 36127.343 km)')
+    print('eccentricity         ecc     = ', ecc, ' (correct = 0.832853)')
+    print('inclination          inc     = ', inc*RAD2DEG, ' deg (correct = 87.87 deg)')
+    print('right ascension      RAAN    = ', RAAN*RAD2DEG, ' deg (correct = 227.898 deg)')
+    print('argument of perigee  omega   = ', omega*RAD2DEG, ' deg (correct = 53.38 deg)')
+    print('true anomaly         theta   = ', theta*RAD2DEG, ' deg (correct = 92.335 deg)')
+    #print('                     m       = ', m)
+    #print('argument of latitude arglat  = ', arglat, ' deg (correct = 145.60549 deg)')
+    #print('true longitude       truelon = ', truelon, ' deg (correct = 55.282587 deg)')
+    #print('longitude of perigee lonper  = ', lonper, 'deg (correct = 281.27 deg)')
+    print('rnew = ', rnew, ' km')
+    print('vnew = ', vnew, ' km/s')
 
 
 

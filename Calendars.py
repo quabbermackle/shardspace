@@ -10,6 +10,8 @@ from scipy import constants as const
 import math
 from numba import jit
 
+import OrbitBasics as ob
+
 Y2D = 336 # Khorvaire year to days
 M2D = 28 # Khorvaire month to days
 W2D = 7 # Galifar week to days
@@ -454,17 +456,22 @@ def wrap(x, y, xmax, base=0):
 
 class GalifarDate:
     # Galifar Calendar (common calendar of Khorvaire)
-    def __init__(self, d=1, m='Zarantyr', y=998):
+    def __init__(self, d=1, m='Zarantyr', y=998, t='00:00:00.0 am'):
         self.day = d
         self.month = m
         self.year = y
-    def disp(self, dofw=False, cal='Galifar', verbose=False):
+        self.timestr = t
+        self.frac_day = ob.fd_str(self.timestr)
+        self.frac_day_sec = ob.fd_str_sec(self.timestr)
+        self.hour, self.min, self.sec, self.ampm, self.is24 = ob.parse_datestr(self.timestr)
+    def disp(self, dofw=False, cal='Galifar', verbose=False, time=False):
         # return the date as a string
         if verbose:
             dofw=True
             d = ordinal(self.day)
             y = ordinal(self.year)
             epoch = ' Year of the Kingdom'
+            time = True
         else:
             d = str(self.day)
             epoch = ' YK'
@@ -479,32 +486,70 @@ class GalifarDate:
             while _d > 7:
                 _d = _d - 7 # constrain day to range 1-7
             dw = daynames[_d-1]
-            return dw + ', ' + string # add day of week to date
-        else: return string
+            string = ', '.join([dw, string]) # add day of week to date
+        if time:
+            string = ', '.join([string, self.timestr])
+        return string
     def days(self):
         # convert date to day of year
         dm = (Gm[self.month]-1)*M2D # elapsed months to days
         return dm + self.day
+    def seconds(self):
+        # convert date to seconds since beginning of year
+        d = self.days()
+        return (d*const.day) + self.frac_day_sec
     def GD(self):
         # Galifaran day (similar to Julian Day)
         # number of days since 1 Zarantyr 0 YK
         dY = self.year*Y2D # GD of 1 Zarantyr, current year
         return dY + self.days()
-    def increment(self, d=1, m=0, y=0):
+    def GD_frac(self):
+        # Galifaran day including fractional day
+        gd = self.GD()
+        return gd + self.frac_day
+    def GD_sec(self):
+        # Galifaran day in seconds
+        gd = self.GD()
+        return (gd*const.day) + self.frac_day_sec
+    def increment(self, d=1, m=0, y=0, h=0, min=0, s=0):
         # add specified amount of time to current date
-        self.day += d
-        if self.day > 28:
+
+        self.sec += s # add seconds
+        if self.sec > 60: # check if entered a new minute
+            _min, _s = np.divmod(self.sec, 60)
+            self.sec = _s # new seconds
+            min += _min # add new minutes
+
+        self.min += min # add minutes
+        if self.min > 60: # check if entered a new hour
+            _h, _min = np.divmod(self.min, 60)
+            self.min = _min # new minutes
+            h += _h # add new hours
+
+        self.hour += h # add hours
+        if self.is24: hlim=24 # 24hour time
+        else: hlim=12 # 12hour time
+        if self.hour > hlim: # check if entered a new day/am/pm
+            if self.is24: _d, _h = np.divmod(self.hour, 24)
+            else: _ampm, _h = np.divmod(self.sec, 12)
+            self.sec = _s # new seconds
+            min += _min # add new minutes
+
+        self.day += d # add days
+        if self.day > 28: # check if entered a new month
             _m, _d = np.divmod(self.day, 28)
-            self.day = _d
-            m += _m
-        mnum = Gm[self.month]
-        mnew = mnum + m
-        if mnew > 12:
+            self.day = _d # day of new month
+            m += _m # add new months
+        
+        mnum = Gm[self.month] # get previous month number
+        mnew = mnum + m # add months
+        if mnew > 12: # check if entered a new year
             _y, _m = np.divmod(mnew, 12)
-            self.year += _y
-            self.month = val2key(Gm, _m)
+            self.year += _y # add new years
+            self.month = val2key(Gm, _m) # get new month name
         else: self.month = val2key(Gm, mnew)
-        self.year += y
+        
+        self.year += y # add years
     def add_day(self, days=1):
         # wrapper for self.increment()
         self.increment(d=days)
@@ -663,42 +708,61 @@ def galifar2sovereign(YK = GalifarDate()):
     return SovereignDate(w=week, d=day, s=season, y=year)
 
 # TEST
+if __name__=='__main__':
+    print('test0:')
+    test = GalifarDate()
+    print(test.disp())
+    test.add_month()
+    print(test.disp())
+    print(galifar2aereni(test).disp())
     
-#test = GalifarDate()
-#test.add_month()
+    print('\ntest1:')
+    test1 = GalifarDate(d=20, m='Olarune', y=994)
+    print(test1.disp(dofw=True, cal='Gatekeeper'))
+    print('day of year: '+str(test1.days()))
+    print('GD '+str(test1.GD()))
+    print(test1.disp(time=True))
 
-'''
-test1 = GalifarDate(d=20, m='Olarune', y=994)
-print(test1.disp(dofw=True, cal='Gatekeeper'))
-print('day of year: '+str(test1.days()))
-print('GD '+str(test1.GD()))
+    print('\ntest2:')
+    test2 = galifar2aereni(test1)
+    print(test2.disp(True))
+    print('day of nuerlnir: '+str(test2.days()))
 
-test2 = galifar2aereni(test1)
-print(test2.disp(True))
-print('day of nuerlnir: '+str(test2.days()))
+    print('\ntest3:')
+    test3 = GD2date(test1.GD())
+    print(test3.disp())
 
-test3 = GD2date(test1.GD())
-print(test3.disp())
+    print('\ntest4:')
+    test4 = aereni2galifar(test2)
+    print(test4.disp())
 
-test4 = aereni2galifar(test2)
-print(test4.disp())
+    print('\ntest5:')
+    test5 = SovereignDate(s='Yeardeath')
+    print(test5.disp(True))
 
-test5 = SovereignDate(s='Yeardeath')
-print(test5.disp(True))
+    print('\ntest6:')
+    test6 = sovereign2galifar(test5)
+    print(test6.disp(True))
 
-test6 = sovereign2galifar(test5)
-print(test6.disp(True))
+    print('\ntest7:')
+    test7 = aereni2galifar(galifar2aereni(GalifarDate()))
+    print(test7.disp(True))
 
-print(' ')
-test7 = aereni2galifar(galifar2aereni(GalifarDate()))
-print(test7.disp(True))
+    print('\ntest8:')
+    test8 = galifar2aereni(aereni2galifar(AereniDate()))
+    print(test8.disp(True))
 
-test8 = galifar2aereni(aereni2galifar(AereniDate()))
-print(test8.disp(True))
+    print('\ntest9:')
+    test9 = galifar2sovereign(sovereign2galifar(SovereignDate()))
+    print(test9.disp(True))
 
-test9 = galifar2sovereign(sovereign2galifar(SovereignDate()))
-print(test9.disp(True))
-
-test10 = sovereign2galifar(galifar2sovereign(GalifarDate()))
-print(test10.disp(True))
-'''
+    print('\ntest10:')
+    test10 = sovereign2galifar(galifar2sovereign(GalifarDate()))
+    print(test10.disp(True))
+    
+    print('\ntest11:')
+    test11 = AereniDate(d=3, t=21, l=12, th=3, r=2, n=2999)
+    print(test11.disp())
+    test11.increment()
+    print(test11.disp())
+    print(aereni2galifar(test11).disp())

@@ -421,7 +421,7 @@ class Scheme:
             # generate k[i]
             if self.c[i] == 0: tstr = 't'
             else:              tstr = 't + h*' + str(self.c[i])
-            self.k.append('k' + str(i) + ' = f(' + ', '.join([tstr, ystr, 'misc']) + ')')
+            self.k.append('k' + str(i) + ' = f(' + ', '.join([tstr, ystr, 'misc', '**kwargs']) + ')')
             
         # generate formula for ynew
         ksum = []
@@ -434,7 +434,7 @@ class Scheme:
         # store string of full scheme
         self.text = '\n'.join(self.k) + '\n' + 'ynew = ' + self.ynew
         
-    def integrator(self, f, h, y, t, misc=[]):
+    def integrator(self, f, h, y, t, misc, **kwargs):
         for line in self.k: exec(line)
         exec('ynew = ' + self.ynew, globals(), locals())
         return locals()['ynew']
@@ -492,7 +492,7 @@ def Newton(f, df, x0, tol=1e-6, maxit=1000):
     return x1
 
 #@jit(nopython=True, parallel=True)
-def rk4basic(f, k, u0, t0, e=False, misc=[]):
+def rk4basic(f, k, u0, t0, e=False, misc=[], **kwargs):
     '''
     Runge-Kutta scheme: 4th order
     
@@ -510,15 +510,15 @@ def rk4basic(f, k, u0, t0, e=False, misc=[]):
     
     # Intermediate stages
     y1 = u0
-    y2 = u0 + 0.5*k*f(t0        , y1, misc)
-    y3 = u0 + 0.5*k*f(t0 + (k/2), y2, misc)
-    y4 = u0 +     k*f(t0 + (k/2), y3, misc)
+    y2 = u0 + 0.5*k*f(t0        , y1, misc, **kwargs)
+    y3 = u0 + 0.5*k*f(t0 + (k/2), y2, misc, **kwargs)
+    y4 = u0 +     k*f(t0 + (k/2), y3, misc, **kwargs)
     
     # New state
-    u1 = u0 + (k/6)*(  f(t0        , y1, misc) + 
-                     2*f(t0 + (k/2), y2, misc) + 
-                     2*f(t0 + (k/2), y3, misc) + 
-                       f(t0 +  k   , y4, misc)  )
+    u1 = u0 + (k/6)*(  f(t0        , y1, misc, **kwargs) + 
+                     2*f(t0 + (k/2), y2, misc, **kwargs) + 
+                     2*f(t0 + (k/2), y3, misc, **kwargs) + 
+                       f(t0 +  k   , y4, misc, **kwargs)  )
     
     err = k**4 # 4th order error
     
@@ -526,12 +526,12 @@ def rk4basic(f, k, u0, t0, e=False, misc=[]):
     return u1
 
 #@jit(nopython=True, parallel=True)
-def ode(f, s0, tspan, dt, scheme=rk4basic, misc=[]):
+def ode(f, s0, tspan, dt, scheme=rk4basic, misc=[], **kwargs):
     t = np.linspace(tspan[0], tspan[1], 1+round((tspan[1]-tspan[0])/dt))
     s = np.zeros((len(t), len(s0)))
     s[0] = s0
     for i in range(1, len(t)):
-        s[i] = scheme(f, dt, s[i-1], t[i-1], misc=misc)
+        s[i] = scheme(f, dt, s[i-1], t[i-1], misc, **kwargs)
     return t, s
 
 # Particle Swarm Optimizer

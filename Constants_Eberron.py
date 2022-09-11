@@ -8,6 +8,7 @@ This script analyzes various planetary & orbital parameters for Shardspace.
 import numpy as np
 from scipy import constants as const
 import OrbitBasics as ob
+import Calendars as cal
 
 """
 Notes:
@@ -109,6 +110,21 @@ r = {'Sarlona':     3500,
      'Frostfell':   3000,
      'Everice':     3000} # radius, km
 
+# randomly generated positions using
+# treasuretools.roll('1d360')*np.pi/180
+# true anomaly at epoch, radians
+# Everice and Frostfell are at mutual L3 points (180deg separation)
+# Everice = Frostfell - pi
+# Aerenal is at Xen'drik's L4 point (60deg ahead)
+# Aerenal = Xendrik + (60*pi/180)
+theta = {'Sarlona':     5.6199601914217405,
+         'Khorvaire':   0.,
+         'Xendrik':     3.8571776469074686,
+         'Aerenal':     4.904375198104066,
+         'Argonnessen': 2.478367537831948,
+         'Frostfell':   4.485496177625427,
+         'Everice':     1.3439035240356336}
+
 # create CentralBody objects for planets
 CB = {}
 for x in planets:
@@ -142,10 +158,12 @@ for i in range(len(names)-2):
 a_vec[6:8] = a_vec[5] # correct Frostfell & Everice indices
 a_vec[4:6] = a_vec[3:5] # correct Aerenal & Argonnessen indices
 
-ArrahSystem = {'names':names,
-               'r'    :a_vec,    
-               'title':'Eberron',
-               'CB'   :Arrah}
+ArrahSystem = {'names':     names,
+               'r':         a_vec,    
+               'title':     'Eberron',
+               'CB':        Arrah,
+               'epoch_ta':  np.array(list(theta.items())),
+               'epoch_date':cal.GalifarDate(d=1, m='Zarantyr', y=998)}
 
 '''
 for i in range(len(planets[:-1])):
@@ -358,3 +376,171 @@ for x in moons:
     coe = np.array([a[x], e, i, RAAN[x], omega, theta[x]])
     moonCOEs[loop,:] = coe
     loop += 1
+
+'''
+PLANES OF THE ASTRAL SEA~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+'''
+
+planes = ['Lamannia',
+          'Mabar',
+          'Irian',
+          'Risia',
+          'Fernia',
+          'Syrania',
+          'Shavarath',
+          'Dolurrh',
+          'Thelanis',
+          'Daanvi',
+          'Kythri',
+          'Xoriat',
+          'Dal Quor']
+
+P_yr = {'Lamannia':    1,
+        'Mabar':       1,
+        'Irian':       3,
+        'Risia':       5,
+        'Fernia':      5,
+        'Syrania':     10,
+        'Shavarath':   36,
+        'Dolurrh':     100,
+        'Thelanis':    225,
+        'Daanvi':      400,
+        'Kythri':      400,
+        'Xoriat':      10000,
+        'Dal Quor':    40000} # orbital period, years
+
+# calculate mass required for Lamannia to orbit at 20AU radius
+mu_req = ob.Pa2mu(P_yr['Lamannia']*P_Khorvaire, 20*ob.dist.AU) # mu required for 20 AU Lamannia orbit
+m_req = ob.mu2mass(mu_req) # mass required for 20 AU Lamannia orbit
+if __name__=='__main__': print('m_req =', m_req, ' kg')
+
+#m_Eberron = 1500*m_S # effective mass of the Material Plane as seen by objects in the Astral Sea
+m_Eberron = m_req
+mu_Eberron = ob.mass2mu(m_Eberron)
+r_Eberron = 1.25*ArrahSystem['r'][-1][0]
+if __name__=='__main__':
+    print(ArrahSystem['names'][-1], 'radius:', ArrahSystem['r'][-1][0], 'km =', ob.dist.km2AU(ArrahSystem['r'][-1][0]), ' AU')
+    print('Eberron radius:', r_Eberron, 'km =', ob.dist.km2AU(r_Eberron), ' AU')
+Eberron = ob.CentralBody('Eberron', mu = mu_Eberron, r = r_Eberron, m = m_Eberron)
+
+a_planes = {}
+P_sec = {}
+if __name__=='__main__': print('Planar Orbits')
+for i in planes:
+    P_sec[i] = P_yr[i]*P_Khorvaire # orbital periods, sec
+    a_planes[i] = ob.P2a(P_sec[i], mu_Eberron) # semimajor axes, km
+    a_AU = ob.dist.km2AU(a_planes[i])
+    if __name__=='__main__': print(i, ':', a_planes[i], 'km =', a_AU, 'AU')
+
+#print(np.array(list(a_planes.values())).flatten())
+AstralSystem_All = {'names': planes,
+                    'r': np.array(list(a_planes.values())),
+                    'title': 'Astral Sea',
+                    'CB': Eberron}
+AstralSystem = {'names': planes[:-2],
+                'r': np.array(list(a_planes.values()))[:-2],
+                'title': 'Astral Sea',
+                'CB': Eberron
+                }
+
+'''
+DAANVI - THE PERFECT ORDER
+'''
+
+# central body is 1Hz pulsar
+m_Daanvi = 1.5*m_S # mass, kg
+L_Daanvi = 5*L_S # luminosity
+
+'''
+DAL QUOR - THE REGION OF DREAMS
+'''
+
+# everything orbits il-Lashtavar
+m_ilLashtavar = m_S # mass, kg
+
+'''
+DOLURRH - THE REALM OF THE DEAD
+'''
+
+# brown dwarf star
+m_Dolurrh = 0.08*m_S # mass, kg
+T_Dolurrh = 1000 # temperature, Kelvin
+L_Dolurrh = 0.1*L_S # luminosity
+
+'''
+FERNIA - THE SEA OF FIRE
+'''
+
+# red supergiant
+m_Fernia = 10*m_S # mass, kg
+T_Fernia = 2500 # temperature, Kelvin
+r_Fernia = 100*r_S # radius, km
+
+'''
+IRIAN - THE ETERNAL DAWN
+'''
+
+# large sun-like star
+T_Irian = 6000 # temperature, Kelvin
+m_Irian = 5*m_S # mass, kg
+r_Irian = 10*r_S # radius, km
+L_Irian = 10*L_S # luminosity
+
+# The Amaranthine City
+# 12 moons in orbit
+r_Amaranthine = 10*ob.Earth.r # radius, km
+
+'''
+KYTHRI - THE CHURNING CHAOS
+'''
+
+# center is nebula with dozens of small T Tauri stars
+# accelerated lifespans end within weeks of formation
+m_Kythri = 0.1*m_S # mass, kg
+Tmin_Kythri = 2500 # min temperature, Kelvin
+Tmax_Kythri = 7500 # max temperature, Kelvin
+
+'''
+MABAR - THE ENDLESS NIGHT
+'''
+
+# black hole
+m_Mabar = 100*m_S # mass, kg
+rSch_Mabar = ob.rschwarz(m_Mabar) # schwarzchild radius, km
+if __name__=='__main__': print('Mabar schwarzchild radius: ', rSch_Mabar, ' km = ', ob.dist.km2AU(rSch_Mabar), ' AU')
+L_Mabar = 0.01*L_S # luminosity of accretion disk
+
+'''
+RISIA - THE PLAIN OF ICE
+'''
+
+# small blue star
+m_Risia = 0.1*m_S # mass, kg
+T_Risia = 6500 # temperature, Kelvin
+r_Risia = 0.1*r_S # radius, km
+
+'''
+SHAVARATH - THE ETERNAL BATTLEGROUND
+'''
+
+# Baator
+m_Baator = 0.5*m_S # mass, kg
+T_Baator = 4000 # temperature, Kelvin
+
+# Justice
+m_Justice = 0.5*m_S # mass, kg
+T_Justice = 5500 # temperature, Kelvin
+
+# The Abyss
+
+'''
+SYRANIA - THE AZURE SKY
+'''
+
+'''
+THELANIS - THE FAERIE COURT
+'''
+
+'''
+XORIAT - THE REALM OF MADNESS
+'''
