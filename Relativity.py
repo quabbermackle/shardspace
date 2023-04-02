@@ -23,6 +23,66 @@ ly = c*const.year/const.kilo    # light year, km
 G = const.G # universal gravitational constant (m^3/kg/s)
 
 ## ----------------------------------------------------------------------------
+## BASIC SPECIAL RELATIVITY & BRACHISTOCHRONE 
+## ----------------------------------------------------------------------------
+
+# proper time = tau
+# coordinate time = t
+
+def atau2t(a, tau):
+    # calculate coordinate time elapsed
+    # given acceleration & proper time
+    return (c / a) * np.sinh(a * (tau / c))
+
+def ad2t(a, d):
+    # calculate coordinate time elapsed
+    # given acceleration & distance
+    return np.sqrt((d / c)**2 + (2 * (d / a)))
+
+def flip_ad2t(a, d):
+    # calculate flip&burn coordinate time elapsed
+    # given acceleration & total distance
+    # 2x time for 1/2 distance to accel, then decel
+    d_flip = d / 2
+    t_half = ad2t(a, d_flip)
+    return 2 * t_half
+
+def at2tau(a, t):
+    # calculate proper time elapsed
+    # given acceleration & coordinate time
+    return (c / a) * np.arcsinh(a * (t / c))
+
+def ad2tau(a, d):
+    # calculate proper time elapsed
+    # given acceleration & distance
+    return (c / a) * np.arccosh((a * (d / (c**2))) + 1)
+
+def atau2d(a, tau):
+    # calculate distance traveled
+    # given acceleration & proper time
+    return (c**2 / a) * (np.cosh(a * (tau / c)) - 1)
+
+def at2d(a, t):
+    # calculate distance traveled
+    # given acceleration & coordinate time
+    return (c**2 / a) * (np.sqrt(1 + (a * (t / c))**2) - 1)
+
+def atau2gamma(a, tau):
+    # calculate gamma factor
+    # given acceleration & proper time elapsed
+    return np.cosh(a * (tau / c))
+
+def at2gamma(a, t):
+    # calculate gamma factor
+    # given acceleration & coordinate time elapsed
+    return np.sqrt(1 + (a * (t / c))**2)
+
+def ad2gamma(a, d):
+    # calculate gamma factor
+    # given acceleration & distance
+    return (a * (d / (c**2))) + 1
+
+## ----------------------------------------------------------------------------
 ## SPECIAL RELATIVITY
 ## ----------------------------------------------------------------------------
 
@@ -716,73 +776,74 @@ return s1
 ## TEST
 ## ----------------------------------------------------------------------------
 
-# test orbit
-alt = 500 # altitude, km
-rx0 = ob.Earth.r + alt # initial x position, km
-ry0 = 0
-rz0 = 0
-vx0 = 0
-vy0 = ob.circvel(rx0, ob.Earth.mu) # initial y velocity, km/s
-vz0 = 0
+if __name__ == '__main__':
+    # test orbit
+    alt = 500 # altitude, km
+    rx0 = ob.Earth.r + alt # initial x position, km
+    ry0 = 0
+    rz0 = 0
+    vx0 = 0
+    vy0 = ob.circvel(rx0, ob.Earth.mu) # initial y velocity, km/s
+    vz0 = 0
 
-# initial state
-s0 = np.array([rx0, ry0, rz0, vx0, vy0, vz0])
-dt = 10
-#tspan = [0, 1*const.hour]
-tspan = [0, 1*ob.a2P(rx0, ob.Earth.mu)]
+    # initial state
+    s0 = np.array([rx0, ry0, rz0, vx0, vy0, vz0])
+    dt = 10
+    #tspan = [0, 1*const.hour]
+    tspan = [0, 1*ob.a2P(rx0, ob.Earth.mu)]
 
-# integrate
-t, rv = na.ode(ob.twobodyRV, s0, tspan, dt, scheme = na.rk4.integrator, misc=ob.Earth)
+    # integrate
+    t, rv = na.ode(ob.twobodyRV, s0, tspan, dt, scheme = na.rk4.integrator, misc=ob.Earth)
 
-# plot
-#plt.close()
-fig, ax = plt.subplots()
-ax.plot(rv[:,0], rv[:,1], '.-')
-ax.set_aspect('equal')
+    # plot
+    #plt.close()
+    fig, ax = plt.subplots()
+    ax.plot(rv[:,0], rv[:,1], '.-')
+    ax.set_aspect('equal')
 
-# test Schwarzchild geodesics
-t0 = 0
-r0 = rx0
-theta0 = 0
-phi0 = 0
-vt0 = 1
-vr0 = 0
-vtheta0 = 0
-vphi0 = (2*np.pi) / ob.a2P(r0, ob.Earth.mu) # 2 pi radians per orbital period
+    # test Schwarzchild geodesics
+    t0 = 0
+    r0 = rx0
+    theta0 = 0
+    phi0 = 0
+    vt0 = 1
+    vr0 = 0
+    vtheta0 = 0
+    vphi0 = (2*np.pi) / ob.a2P(r0, ob.Earth.mu) # 2 pi radians per orbital period
 
-s0sphere = np.array([t0, r0, theta0, phi0, vt0, vr0, vtheta0, vphi0])
-dtau = 10
-tauspan = [0, 10*ob.a2P(r0, ob.Earth.mu)]
+    s0sphere = np.array([t0, r0, theta0, phi0, vt0, vr0, vtheta0, vphi0])
+    dtau = 10
+    tauspan = [0, 10*ob.a2P(r0, ob.Earth.mu)]
 
-# integrate
-tausphere, statesphere = na.ode(schwarzsphere, s0sphere, tauspan, dtau, misc=ob.Earth)
-tcoord = statesphere[:,0]
-rsphere = statesphere[:,1]
-thetasphere = statesphere[:,2]
-phisphere = statesphere[:,3]
-rx, ry, rz = schwarz2rect(rsphere, thetasphere, phisphere, ob.Earth.rs)
+    # integrate
+    tausphere, statesphere = na.ode(schwarzsphere, s0sphere, tauspan, dtau, misc=ob.Earth)
+    tcoord = statesphere[:,0]
+    rsphere = statesphere[:,1]
+    thetasphere = statesphere[:,2]
+    phisphere = statesphere[:,3]
+    rx, ry, rz = schwarz2rect(rsphere, thetasphere, phisphere, ob.Earth.rs)
 
-# plot
-polfig, polax = plt.subplots(subplot_kw={'projection': 'polar'})
-polax.plot(statesphere[:,3], statesphere[:,1], '.-')
-polax.set_title('Schwarzchild spherical coordinates')
-rectfig, rectax = plt.subplots()
-rectax.plot(rx, ry, '.-')
-rectax.set_title('Isotropic rectangular coordinates')
-plt.show()
+    # plot
+    polfig, polax = plt.subplots(subplot_kw={'projection': 'polar'})
+    polax.plot(statesphere[:,3], statesphere[:,1], '.-')
+    polax.set_title('Schwarzchild spherical coordinates')
+    rectfig, rectax = plt.subplots()
+    rectax.plot(rx, ry, '.-')
+    rectax.set_title('Isotropic rectangular coordinates')
+    plt.show()
 
-'''
-fig0, ax0 = plt.subplots()
-ax0.plot(tausphere, statesphere[:,0], '.-')
-ax0.set_title('t vs tau')
-fig1, ax1 = plt.subplots()
-ax1.plot(tausphere, statesphere[:,1], '.-')
-ax1.set_title('r vs tau')
-fig2, ax2 = plt.subplots()
-ax2.plot(tausphere, statesphere[:,2], '.-')
-ax2.set_title('theta vs tau')
-fig3, ax3 = plt.subplots()
-ax3.plot(tausphere, statesphere[:,3], '.-')
-ax3.set_title('phi vs tau')
-plt.show()
-'''
+    '''
+    fig0, ax0 = plt.subplots()
+    ax0.plot(tausphere, statesphere[:,0], '.-')
+    ax0.set_title('t vs tau')
+    fig1, ax1 = plt.subplots()
+    ax1.plot(tausphere, statesphere[:,1], '.-')
+    ax1.set_title('r vs tau')
+    fig2, ax2 = plt.subplots()
+    ax2.plot(tausphere, statesphere[:,2], '.-')
+    ax2.set_title('theta vs tau')
+    fig3, ax3 = plt.subplots()
+    ax3.plot(tausphere, statesphere[:,3], '.-')
+    ax3.set_title('phi vs tau')
+    plt.show()
+    '''

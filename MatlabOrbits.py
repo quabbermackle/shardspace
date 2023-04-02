@@ -350,6 +350,14 @@ if __name__ == "__main__":
     print('rnew = ', rnew, ' km')
     print('vnew = ', vnew, ' km/s')
 
+    coe = []
+    h     = coe[0]
+    ecc   = coe[1]
+    inc   = coe[2]
+    RAAN  = coe[3]
+    omega = coe[4]
+    theta = coe[5]
+
 
 
 

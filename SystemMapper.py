@@ -23,6 +23,7 @@ from os import path
 import OrbitBasics as ob
 import Constants_Eberron as eb
 import Calendars as cal
+from Calendars import GalifarDate
 
 '''
 -------------------------------------------------------------------------------
@@ -140,19 +141,26 @@ class SystemMap:
             self.thetagrid_in.append(np.linspace(0, 360, int(self.ntheta_in[i])+1))
         
         # epoch date
-        # 
-        if 'epoch' in planets.keys(): self.epoch = planets['epoch']
+        # must be a GalifarDate object
+        if 'epoch_date' in planets.keys(): self.epoch = planets['epoch_date']
         else:
-            self.epoch = 0
-            self.planets['epoch'] = self.epoch
+            self.epoch = GalifarDate()
+            self.planets['epoch_date'] = self.epoch
         
-        # epoch positions
+        # epoch positions - true anomaly
+        if 'epoch_ta' in planets.keys(): self.epoch_ta = planets['epoch_ta']
+        else:
+            self.epoch_ta = np.zeros(len(self.r))
+
+        # epoch positions - rectangular coordinates
         if 'epochxy' in planets.keys(): self.epochxy = planets['epochxy']
+        elif 'epoch_ta' in planets.keys():
+            self.epochxy = self.ephemeris(self.epoch, self.planets)
         else:
             self.epochxy = np.zeros((len(self.r), 2))
             for i in range(len(self.r)):
                 self.epochxy[i,:] = [0, self.r[i]] # [x, y] rect coord, km
-            self.planets['epochxy'] = self.epochxy
+        self.planets['epochxy'] = self.epochxy
         
         # define outer track outer limits
         self.rmax = max(planets['r']) # km, largest orbital radius
@@ -331,12 +339,13 @@ if __name__=='__main__':
     #plt.show()
     print(test.rsphere/test.d_outer)
     '''
-    '''
+    #'''
     # Arrah System test
     test = SystemMap(eb.ArrahSystem)
     test.showepoch()
     test.showdate(1*cal.YEAR)
-    #plt.show()
+    plt.show()
+    #'''
     '''
     # Astral System test
     testAstral = SystemMap( eb.AstralSystem,
@@ -347,3 +356,4 @@ if __name__=='__main__':
     testAstral.showepoch()
     testAstral.showdate(1*cal.YEAR)
     plt.show()
+    '''

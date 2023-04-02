@@ -464,6 +464,10 @@ class GalifarDate:
         self.frac_day = ob.fd_str(self.timestr)
         self.frac_day_sec = ob.fd_str_sec(self.timestr)
         self.hour, self.min, self.sec, self.ampm, self.is24 = ob.parse_datestr(self.timestr)
+    def __repr__(self) -> str:
+        return self.disp()
+    def __str__(self) -> str:
+        return self.disp()
     def disp(self, dofw=False, cal='Galifar', verbose=False, time=False):
         # return the date as a string
         if verbose:
