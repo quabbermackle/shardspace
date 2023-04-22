@@ -1,5 +1,5 @@
 '''
-Defines classes for automatic differentiation.
+Defines basic dual class for automatic differentiation of 1st derivatives.
 This is accomplished by operator overloading.
 Designed for cython and numpy.
 
@@ -7,8 +7,9 @@ Matthew Gunther
 04/04/2023
 '''
 
-#import cython as cy
+import cython as cy
 import numpy as np
+#cimport numpy as cnp
 
 # template for overloaded function
 '''
@@ -215,152 +216,3 @@ def acos(x=dual):
 
 def atan(x=dual):
     return
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-'''
-template for operator overload functions in nderiv class
-
-    def __add__(self, other):
-        if type(self) != nderiv and type(other) != nderiv:
-            # neither are nderiv
-            return self + other
-        elif type(self) != nderiv and type(other) == nderiv:
-            # self is scalar, other is nderiv
-            val = self + other.val
-            return nderiv(val, other.dvec, other.order)
-        elif type(self) == nderiv and type(other) != nderiv:
-            # other is scalar, self is nderiv
-            val = self.val + other
-            return nderiv(val, self.dvec, self.order)
-        elif type(self) == nderiv and type(other) == nderiv:
-            # both are nderiv
-            val = self.val + other.val
-            order = max(self.order, other.order)
-            dvec = np.zeros(order)
-            if len(self.dvec) < order:
-                # add zeros so len(dvec) = order
-                self.dvec = np.pad( self.dvec, (0, order-len(self.dvec)), constant_values=0)
-            if len(other.dvec) < order:
-                # add zeros so len(dvec) = order
-                other.dvec = np.pad( other.dvec, (0, order-len(other.dvec)), constant_values=0)
-            for i in range(order):
-                dvec[i] = self.dvec[i] + other.dvec[i]
-            return nderiv(val, dvec, order)
-'''
-
-class nderiv():
-    '''
-    Implements the rules for automatic differentiation outlined in
-    Levi, Nadav - Numerical integration of ODE's with Automatic differentiation
-    The value is stored as nderiv.val, a float
-    The derivatives up to order n are stored as nderiv.dvec, a numpy array
-    The order of the derivatives to calculate is nderiv.order, an int
-    '''
-
-    def __init__(   self,
-                    value:float,
-                    dvector:np.array = np.array([1]),
-                    order:int = 1):
-        '''
-        initialize variable to differentiate with respect to with
-            dvector = np.array([1, 0, ...]), length=order
-        initialize independent variables and constants with
-            deriv = np.array([0, ...]), length=order
-        '''
-        self.val = float(value)
-        self.dvec = np.array(dvector)
-        self.order = int(order)
-        if len(self.dvec) > self.order:
-            raise RuntimeError('length of dvector must be <= order!')
-        if len(self.dvec) < self.order:
-            # add zeros so len(dvec) = order
-            self.dvec = np.pad( self.dvec, (0, order-len(self.dvec)), constant_values=0)
-    
-    # representation for printouts
-    def __repr__(self): #also called when invoking self.__str__()
-        return f'{self.val} with derivatives up to order {self.order}: {self.dvec}'
-
-    # addition
-    def __add__(self, other):
-        if type(self) != nderiv and type(other) != nderiv:
-            # neither are nderiv
-            return self + other
-        elif type(self) != nderiv and type(other) == nderiv:
-            # self is scalar, other is nderiv
-            val = self + other.val
-            return nderiv(val, other.dvec, other.order)
-        elif type(self) == nderiv and type(other) != nderiv:
-            # other is scalar, self is nderiv
-            val = self.val + other
-            return nderiv(val, self.dvec, self.order)
-        elif type(self) == nderiv and type(other) == nderiv:
-            # both are nderiv
-            val = self.val + other.val # add values as normal
-            order = max(self.order, other.order)
-            dvec = np.zeros(order)
-            if len(self.dvec) < order: # add zeros so len(dvec) = order
-                self.dvec = np.pad( self.dvec, (0, order-len(self.dvec)), constant_values=0)
-            if len(other.dvec) < order: # add zeros so len(dvec) = order
-                other.dvec = np.pad( other.dvec, (0, order-len(other.dvec)), constant_values=0)
-            for i in range(order):
-                dvec[i] = self.dvec[i] + other.dvec[i]
-            return nderiv(val, dvec, order)
-    
-    # subtraction
-    def __sub__(self, other):
-        if type(self) != nderiv and type(other) != nderiv:
-            # neither are nderiv
-            return self - other
-        elif type(self) != nderiv and type(other) == nderiv:
-            # self is scalar, other is nderiv
-            val = self - other.val
-            return nderiv(val, other.dvec, other.order)
-        elif type(self) == nderiv and type(other) != nderiv:
-            # other is scalar, self is nderiv
-            val = self.val - other
-            return nderiv(val, self.dvec, self.order)
-        elif type(self) == nderiv and type(other) == nderiv:
-            # both are nderiv
-            val = self.val - other.val # subtract values as normal
-            order = max(self.order, other.order)
-            dvec = np.zeros(order)
-            if len(self.dvec) < order:
-                # add zeros so len(dvec) = order
-                self.dvec = np.pad( self.dvec, (0, order-len(self.dvec)), constant_values=0)
-            if len(other.dvec) < order:
-                # add zeros so len(dvec) = order
-                other.dvec = np.pad( other.dvec, (0, order-len(other.dvec)), constant_values=0)
-            for i in range(order):
-                dvec[i] = self.dvec[i] - other.dvec[i]
-            return nderiv(val, dvec, order)
-    
-    # multiplication
-    def __mul__(self, other):
-        if type(self) != nderiv and type(other) != nderiv:
-            # neither are nderiv
-            return self * other
-        else:
-            # convert both to nderiv as required
-            if type(self) != nderiv:
-                self = nderiv(self)
-            if type(other) != nderiv:
-                other = nderiv(other)
-            val = self.val * other.val # multiply values as normal
-            order = max(self.order, other.order)
-            dvec = np.zeros(order)
-            if len(self.dvec) < order:
-                # add zeros so len(dvec) = order
-                self.dvec = np.pad( self.dvec, (0, order-len(self.dvec)), constant_values=0)
-            if len(other.dvec) < order:
-                # add zeros so len(dvec) = order
-                other.dvec = np.pad( other.dvec, (0, order-len(other.dvec)), constant_values=0)
-            for i in range(order):
-                dvec[i] = self.dvec[i] + other.dvec[i]
-            return nderiv(val, dvec, order)
-    
-if __name__=='__main__':
-    # unit tests
-    test = nderiv(1, np.array([1, 0]), 3)
-    print(test.val, test.dvec, test.order)
-    print(test)
-    print(str(test))
