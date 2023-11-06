@@ -11,7 +11,7 @@ if __name__=='__main__':
     print(testarray)
     '''
 
-    test = nderiv(2, np.array([1, 0]), 3)
+    test = nderiv(np.array([2, 1, 0]), 3)
     print(test.val(), test.dvec, test.order)
     print('test = ', test)
     print(str(test))
@@ -51,7 +51,7 @@ if __name__=='__main__':
     print('(x^2 - cos(y)) * (5xy + 7): ', testxy(test, test2))
 
     # example from documentation on the auto_diff package
-    x_auto_diff = nderiv(value=3, dvec=[1], order=1)
+    x_auto_diff = nderiv([3, 1], order=1)
     print('auto_diff test: ')
     print(f'x = {x_auto_diff} (should be val=3, der=1)')
     y = x_auto_diff**2
@@ -67,24 +67,102 @@ if __name__=='__main__':
     #f1 = lambda x : np.cos(x) + 2*x
     #f2 = lambda x : -np.sin(x) + 2
     #f3 = lambda x : -np.cos(x)
-    print('analytical test:')
+    print('\n\nanalytical test:')
     x = 2
     y = 3
-    x3 = nderiv(value=x, dvec=[1], order=3) # independent variable
-    y3 = nderiv(value=y, dvec=[0], order=3) # dependent variable
-    func = lambda x,const : x - const
-    f = func(x3, y)
-    f0 = func(x, y)
+    print(f'x = {x}, const = {y}\n')
+    x3 = nderiv([x,1], order=3) # independent variable
+    y3 = nderiv(y, order=3) # dependent variable
+    
+    print('x + const')
+    f = x3 + y
+    f0 = x + y
     f1 = 1
     f2 = 0
     f3 = 0
     print('autodiff:')
     print(f)
-    print('analytical:')
-    print(f'    f0 = {f0}')
-    print(f'    f1 = {f1}')
-    print(f'    f2 = {f2}')
-    print(f'    f3 = {f3}')
+    print(f'analytical: [{f0}, {f1}, {f2}, {f3}]\n')
+
+    print('x - const')
+    f = x3 - y
+    f0 = x - y
+    f1 = 1
+    f2 = 0
+    f3 = 0
+    print('autodiff:')
+    print(f)
+    print(f'analytical: [{f0}, {f1}, {f2}, {f3}]\n')
+
+    print('const + x')
+    f = y + x3
+    f0 = y + x
+    f1 = 1
+    f2 = 0
+    f3 = 0
+    print('autodiff:')
+    print(f)
+    print(f'analytical: [{f0}, {f1}, {f2}, {f3}]\n')
+
+    print('const - x')
+    f = y - x3
+    f0 = y - x
+    f1 = -1
+    f2 = 0
+    f3 = 0
+    print('autodiff:')
+    print(f)
+    print(f'analytical: [{f0}, {f1}, {f2}, {f3}]\n')
+
+    print('x * const')
+    f = x3 * y
+    f0 = x * y
+    f1 = y
+    f2 = 0
+    f3 = 0
+    print('autodiff:')
+    print(f)
+    print(f'analytical: [{f0}, {f1}, {f2}, {f3}]\n')
+
+    print('const * x')
+    f = y * x3
+    f0 = y * x
+    f1 = y
+    f2 = 0
+    f3 = 0
+    print('autodiff:')
+    print(f)
+    print(f'analytical: [{f0}, {f1}, {f2}, {f3}]\n')
+
+    print('-x + const')
+    f = -x3 + y
+    f0 = -x + y
+    f1 = -1
+    f2 = 0
+    f3 = 0
+    print('autodiff:')
+    print(f)
+    print(f'analytical: [{f0}, {f1}, {f2}, {f3}]\n')
+
+    print('x / const')
+    f = x3 / y
+    f0 = x / y
+    f1 = 1 / y
+    f2 = 0
+    f3 = 0
+    print('autodiff:')
+    print(f)
+    print(f'analytical: [{f0}, {f1}, {f2}, {f3}]\n')
+
+    print('const / x')
+    f = y / x3
+    f0 = y * (x**-1)
+    f1 = (-1*y) * (x**-2)
+    f2 = (-2*-1*y) * (x**-3)
+    f3 = (-3*-2*-1*y) * (x**-4)
+    print('autodiff:')
+    print(f)
+    print(f'analytical: [{f0}, {f1}, {f2}, {f3}]\n')
 
     '''
     order = 3

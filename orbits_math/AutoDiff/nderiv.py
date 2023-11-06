@@ -16,45 +16,22 @@ import numpy as np
 template for operator overload functions in nderiv class
 
     def __add__(self, other):
+        # add other to self
         if type(self) != nderiv and type(other) != nderiv:
             # neither are nderiv
             return self + other
-        elif type(self) != nderiv and type(other) == nderiv:
-            # self is scalar, other is nderiv
-            val = self + other.val()
-            return nderiv(val, other.derivs(), other.order)
-        elif type(self) == nderiv and type(other) != nderiv:
-            # other is scalar, self is nderiv
-            val = self.val() + other
-            return nderiv(val, self.derivs(), self.order)
-        elif type(self) == nderiv and type(other) == nderiv:
-            # both are nderiv
-            order = max(self.order, other.order)
-            dvec = np.zeros(order+1)
-            self.pad_dvec(order)
-            other.pad_dvec(order)
-            for i in range(order+1):
-                # add values and derivatives of each order
-                dvec[i] = self.dvec[i] + other.dvec[i] # Levi Eq. 25
-            return nderiv(dvec[0], dvec[1:], order)
-    
-    def __mul__(self, other):
-        if type(self) != nderiv and type(other) != nderiv:
-            # neither are nderiv
-            return self * other
         else:
-            # convert both to nderiv as required
+            # convert to nderiv as needed
             if type(self) != nderiv: self = nderiv(self)
             if type(other) != nderiv: other = nderiv(other)
             order = max(self.order, other.order)
             dvec = np.zeros(order+1)
             self.pad_dvec(order)
             other.pad_dvec(order)
-            for n in range(order+1):
-                for i in range(n+1):
-                    # product rule generalized to nth derivative
-                    dvec[n] += self.dvec[i] * other.dvec[n - i] # Levi Eq. 26
-            return nderiv(dvec[0], dvec[1:], order)
+            for i in range(order+1):
+                # Levi Eq. 25, add values and derivatives of each order
+                dvec[i] = self[i] + other[i]
+            return nderiv(dvec, order)
 '''
 
 class nderiv():
@@ -69,26 +46,25 @@ class nderiv():
                 '''
 
     def __init__(   self,
-                    value:cy.float,
-                    dvec:np.array = np.array([cy.float(0)]),
+                    dvec:np.array = np.array([cy.float(0), cy.float(0)]),
                     order:cy.int = cy.int(1)):
         '''
         initialize variable, x, to differentiate with respect to with
-            derivs = np.array([1, ...]), length = order
+            dvec = [x, 1, ...], length = order + 1
         initialize independent variables and constants with
-            derivs = np.array([x, 0, ...]), length = order
+            dvec = [x, 0, ...], length = order + 1
         '''
         # dvec contains value and all derivs up to specified order
         # value is dvec[0], 1st order deriv is dvec[1], etc
-        self.dvec = np.concatenate([np.atleast_1d(value), np.array(dvec)])
+        self.dvec = np.atleast_1d(dvec)
         self.order: cy.int = cy.int(order)
         if len(self.dvec) > self.order+1:
-            raise RuntimeError('length of dvector must be <= order +1 !')
+            order = len(self.dvec) - 1 # uses dvec length to define order
         self.pad_dvec(self.order)
 
     def __repr__(self): #also called when invoking self.__str__()
         # representation for printouts
-        return f'val: {self.val()}, derivs to order {self.order}: {self.derivs()}'
+        return f'val, derivs to order {self.order}: {self.val()}, {self.derivs()}'
 
     def __len__(self): return self.dvec.__len__()
 
@@ -118,16 +94,10 @@ class nderiv():
         if type(self) != nderiv and type(other) != nderiv:
             # neither are nderiv
             return self + other
-        elif type(self) != nderiv and type(other) == nderiv:
-            # self is scalar, other is nderiv
-            val = self + other.val()
-            return nderiv(val, other.derivs(), other.order)
-        elif type(self) == nderiv and type(other) != nderiv:
-            # other is scalar, self is nderiv
-            val = self.val() + other
-            return nderiv(val, self.derivs(), self.order)
-        elif type(self) == nderiv and type(other) == nderiv:
-            # both are nderiv
+        else:
+            # convert to nderiv as needed
+            if type(self) != nderiv: self = nderiv(self)
+            if type(other) != nderiv: other = nderiv(other)
             order = max(self.order, other.order)
             dvec = np.zeros(order+1)
             self.pad_dvec(order)
@@ -135,23 +105,17 @@ class nderiv():
             for i in range(order+1):
                 # Levi Eq. 25, add values and derivatives of each order
                 dvec[i] = self[i] + other[i]
-            return nderiv(dvec[0], dvec[1:], order)
+            return nderiv(dvec, order)
 
     def __radd__(self, other):
         # add self to other
         if type(self) != nderiv and type(other) != nderiv:
             # neither are nderiv
             return other + self
-        elif type(self) != nderiv and type(other) == nderiv:
-            # self is scalar, other is nderiv
-            val = other.val() + self
-            return nderiv(val, other.derivs(), other.order)
-        elif type(self) == nderiv and type(other) != nderiv:
-            # other is scalar, self is nderiv
-            val = other + self.val()
-            return nderiv(val, self.derivs(), self.order)
-        elif type(self) == nderiv and type(other) == nderiv:
-            # both are nderiv
+        else:
+            # convert to nderiv as needed
+            if type(self) != nderiv: self = nderiv(self)
+            if type(other) != nderiv: other = nderiv(other)
             order = max(self.order, other.order)
             dvec = np.zeros(order+1)
             self.pad_dvec(order)
@@ -159,23 +123,17 @@ class nderiv():
             for i in range(order+1):
                 # Levi Eq. 25, add values and derivatives of each order
                 dvec[i] = other[i] + self[i]
-            return nderiv(dvec[0], dvec[1:], order)
+            return nderiv(dvec, order)
     
     def __sub__(self, other):
         # subtract other from self
         if type(self) != nderiv and type(other) != nderiv:
             # neither are nderiv
             return self - other
-        elif type(self) != nderiv and type(other) == nderiv:
-            # self is scalar, other is nderiv
-            val = self - other.val()
-            return nderiv(val, other.derivs(), other.order)
-        elif type(self) == nderiv and type(other) != nderiv:
-            # other is scalar, self is nderiv
-            val = self.val() - other
-            return nderiv(val, self.derivs(), self.order)
-        elif type(self) == nderiv and type(other) == nderiv:
-            # both are nderiv
+        else:
+            # convert to nderiv as needed
+            if type(self) != nderiv: self = nderiv(self)
+            if type(other) != nderiv: other = nderiv(other)
             order = max(self.order, other.order)
             dvec = np.zeros(order+1)
             self.pad_dvec(order)
@@ -183,23 +141,17 @@ class nderiv():
             # Levi Eq. 25, subtract values and derivatives of each order
             for i in range(order+1):
                 dvec[i] = self[i] - other[i]
-            return nderiv(dvec[0], dvec[1:], order)
+            return nderiv(dvec, order)
     
     def __rsub__(self, other):
         # subtract self from other
         if type(self) != nderiv and type(other) != nderiv:
             # neither are nderiv
             return other - self
-        elif type(self) != nderiv and type(other) == nderiv:
-            # self is scalar, other is nderiv
-            val = other.val() - self
-            return nderiv(val, other.derivs(), other.order)
-        elif type(self) == nderiv and type(other) != nderiv:
-            # other is scalar, self is nderiv
-            val = other - self.val()
-            return nderiv(val, self.derivs(), self.order)
-        elif type(self) == nderiv and type(other) == nderiv:
-            # both are nderiv
+        else:
+            # convert to nderiv as needed
+            if type(self) != nderiv: self = nderiv(self)
+            if type(other) != nderiv: other = nderiv(other)
             order = max(self.order, other.order)
             dvec = np.zeros(order+1)
             self.pad_dvec(order)
@@ -207,7 +159,7 @@ class nderiv():
             # Levi Eq. 25, subtract values and derivatives of each order
             for i in range(order+1):
                 dvec[i] = other[i] - self[i]
-            return nderiv(dvec[0], dvec[1:], order)
+            return nderiv(dvec, order)
 
     def __mul__(self, other):
         # multiply self by other
@@ -215,7 +167,7 @@ class nderiv():
             # neither are nderiv
             return self * other
         else:
-            # convert both to nderiv as required
+            # convert both to nderiv as needed
             if type(self) != nderiv: self = nderiv(self)
             if type(other) != nderiv: other = nderiv(other)
             order = max(self.order, other.order)
@@ -226,7 +178,7 @@ class nderiv():
             for n in range(order+1):
                 for i in range(n+1):
                     dvec[n] += self[i] * other[n - i]
-            return nderiv(dvec[0], dvec[1:], order)
+            return nderiv(dvec, order)
 
     def __rmul__(self, other):
         # multiply other by self
@@ -234,7 +186,7 @@ class nderiv():
             # neither are nderiv
             return other * self
         else:
-            # convert both to nderiv as required
+            # convert both to nderiv as needed
             if type(self) != nderiv: self = nderiv(self)
             if type(other) != nderiv: other = nderiv(other)
             order = max(self.order, other.order)
@@ -245,7 +197,7 @@ class nderiv():
             for n in range(order+1):
                 for i in range(n+1):
                     dvec[n] += other[i] * self[n - i]
-            return nderiv(dvec[0], dvec[1:], order)
+            return nderiv(dvec, order)
 
     def __truediv__(self, other):
         # divide self by other
@@ -266,7 +218,7 @@ class nderiv():
                 for i in range(1, n+1):
                     dvec[n] += dvec[n - i] * other[i]
                 dvec[n] = q0_inv * (self[n] - dvec[n])
-            return nderiv(dvec[0], dvec[1:], order)
+            return nderiv(dvec, order)
 
     def __rtruediv__(self, other):
         # divide other by self
@@ -287,13 +239,13 @@ class nderiv():
                 for i in range(1, n+1):
                     dvec[n] += dvec[n - i] * self[i]
                 dvec[n] = q0_inv * (other[n] - dvec[n])
-            return nderiv(dvec[0], dvec[1:], order)
+            return nderiv(dvec, order)
     
     def __pow__(self, other):
         # raise self to the power of other
         if type(self) != nderiv and type(other) != nderiv:
             # neither are nderiv
-            return self / other
+            return self ** other
         if type(other) == nderiv:
             raise RuntimeError('Can only raise nderiv to a constant!')
         if other == 1.:
@@ -307,7 +259,7 @@ class nderiv():
                 for i in range(n):
                     dvec[n] += ((other * n) - ((other + 1) * i)) * dvec[i] * self[n - i]
                 dvec[n] = (p0_inv / n) * dvec[n]
-            return nderiv(dvec[0], dvec[1:], self.order)
+            return nderiv(dvec, self.order)
     
     def __lt__(self, other):
         if type(self) != nderiv and type(other) != nderiv:
@@ -315,7 +267,7 @@ class nderiv():
         elif type(self) == nderiv and type(other) != nderiv:
             return self.val() < other
         elif type(self) != nderiv and type(other) == nderiv:
-            return self < other.val
+            return self < other.val()
         else:
             return self.val() < other.val()
     def __le__(self, other):
@@ -324,7 +276,7 @@ class nderiv():
         elif type(self) == nderiv and type(other) != nderiv:
             return self.val() <= other
         elif type(self) != nderiv and type(other) == nderiv:
-            return self <= other.val
+            return self <= other.val()
         else:
             return self.val() <= other.val()
     def __eq__(self, other):
@@ -333,7 +285,7 @@ class nderiv():
         elif type(self) == nderiv and type(other) != nderiv:
             return self.val() == other
         elif type(self) != nderiv and type(other) == nderiv:
-            return self == other.val
+            return self == other.val()
         else:
             return self.val() == other.val()
     def __ne__(self, other):
@@ -342,7 +294,7 @@ class nderiv():
         elif type(self) == nderiv and type(other) != nderiv:
             return self.val() != other
         elif type(self) != nderiv and type(other) == nderiv:
-            return self != other.val
+            return self != other.val()
         else:
             return self.val() != other.val()
     def __gt__(self, other):
@@ -351,7 +303,7 @@ class nderiv():
         elif type(self) == nderiv and type(other) != nderiv:
             return self.val() > other
         elif type(self) != nderiv and type(other) == nderiv:
-            return self > other.val
+            return self > other.val()
         else:
             return self.val() > other.val()
     def __ge__(self, other):
@@ -360,7 +312,7 @@ class nderiv():
         elif type(self) == nderiv and type(other) != nderiv:
             return self.val() >= other
         elif type(self) != nderiv and type(other) == nderiv:
-            return self >= other.val
+            return self >= other.val()
         else:
             return self.val() >= other.val()
 
@@ -368,6 +320,14 @@ class nderiv():
 
     def __int__(self): return int(self[0])
     def __float__(self): return float(self[0])
+
+    def exp(self): return exp(self)
+
+    def log(self): return log(self)
+
+    def sin(self): return sin(self)
+
+    def cos(self): return cos(self)
     
 def exp(p:nderiv):
     # raise e to the power of p
@@ -382,7 +342,7 @@ def exp(p:nderiv):
             for i in range(n):
                 dvec[n] += (n - i) * dvec[i] * p[n - i]
             dvec[n] = (1 / np.math.factorial(n)) * dvec[n]
-        return nderiv(dvec[0], dvec[1:], p.order)
+        return nderiv(dvec, p.order)
 
 def log(p:nderiv):
     # natural logarithm of p
@@ -398,7 +358,7 @@ def log(p:nderiv):
             for i in range(1, n):
                 dvec[n] += (n - i) * p[i] * dvec[n - i]
             dvec[n] = p0_inv * (p[n] - ((1 / np.math.factorial(n)) * dvec[n]))
-        return nderiv(dvec[0], dvec[1:], p.order)
+        return nderiv(dvec, p.order)
 
 def cos(p:nderiv):
     # cosine of p, assumes p in radians
@@ -414,13 +374,13 @@ def cos(p:nderiv):
             sinp = [np.sin(p.val())]
         else:
             # recursive call to nderiv.sin
-            psub1 = nderiv(p.val(), p.derivs()[:-1], p.order-1) # decrement order to prevent recursion loop
-            sinp = sin(psub1) # note this is nderiv.sin
+            psub1 = nderiv(p.dvec[:-1], p.order-1) # decrement order to prevent recursion loop
+            sinp = sin(psub1) # note this is nderiv sin
         for n in range(1, p.order+1):
             for i in range(n):
                 dvec[n] += (n - i) * sinp[i] * p[n - i]
             dvec[n] = (-1 / np.math.factorial(n)) * dvec[n]
-        return nderiv(dvec[0], dvec[1:], p.order)
+        return nderiv(dvec, p.order)
 
 def sin(p:nderiv):
     # sine of p, assumes p in radians
@@ -436,10 +396,58 @@ def sin(p:nderiv):
             cosp = [np.cos(p.val())]
         else:
             # recursive call to nderiv.cos
-            psub1 = nderiv(p.val(), p.derivs()[:-1], p.order-1) # decrement order to prevent recursion loop
-            cosp = cos(psub1) # note this is nderiv.sin
+            psub1 = nderiv(p.dvec[:-1], p.order-1) # decrement order to prevent recursion loop
+            cosp = cos(psub1) # note this is nderiv sin
         for n in range(1, p.order+1):
             for i in range(n):
                 dvec[n] += (n - i) * cosp[i] * p[n - i]
             dvec[n] = (1 / np.math.factorial(n)) * dvec[n]
-        return nderiv(dvec[0], dvec[1:], p.order)
+        return nderiv(dvec, p.order)
+
+def sqrt(x:nderiv):
+    # square root of x
+    if type(x) != nderiv:
+        # fall back to numpy
+        return np.sqrt(x)
+    else:
+        return x ** 0.5
+
+# trig functions defined in terms of sin() and cos()
+
+def tan(x:nderiv): return sin(x) / cos(x)
+
+def cot(x:nderiv): return cos(x) / sin(x)
+
+def csc(x:nderiv): return 1 / sin(x)
+
+def sec(x:nderiv): return 1 / cos(x)
+
+def cot(x:nderiv): return 1 / tan(x)
+
+# hyperbolic trig functions defined in terms of exp()
+
+def sinh(x:nderiv): return (exp(x) - exp(-x)) / 2
+
+def cosh(x:nderiv): return (exp(x) + exp(-x)) / 2
+
+def tanh(x:nderiv): return (exp(2*x) - 1) / (exp(2*x) + 1)
+
+def coth(x:nderiv): return (exp(2*x) + 1) / (exp(2*x) - 1)
+
+def sech(x:nderiv): return 2 / (exp(x) + exp(-x))
+
+def csch(x:nderiv): return 2 / (exp(x) - exp(-x))
+
+# inverse hyperbolic trig functions defined in terms of log()
+
+def arcsinh(x:nderiv): return log(x + (x**2 + 1)**0.5)
+
+def arccosh(x:nderiv): return log(x + (x**2 - 1)**0.5)
+
+def arctanh(x:nderiv): return 0.5 * log((1 + x) / (1 - x))
+
+def arccoth(x:nderiv): return 0.5 * log((x + 1) / (x - 1))
+
+def arcsech(x:nderiv): return log((1/x) + ((1/(x**2)) - 1)**0.5)
+
+def arccsch(x:nderiv): return log((1/x) + ((1/(x**2)) + 1)**0.5)
