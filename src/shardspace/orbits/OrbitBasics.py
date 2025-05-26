@@ -6,8 +6,14 @@ Basic orbits functions & classes
 """
 
 import pathlib
-import os
 import time
+import os
+import sys
+import inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
 
 import numpy as np
 from scipy import constants as const
@@ -23,7 +29,7 @@ from pymgrit.core.mgrit import Mgrit
 from pymgrit.core import simple_setup_problem
 from pymgrit.core import mgrit
 
-import NumericalAnalysis as na
+from shardspace.math import NumericalAnalysis as na
 import MatlabOrbits as morb
 import ValladoOrbits as vorb
 import ExternalOrbits as xorb

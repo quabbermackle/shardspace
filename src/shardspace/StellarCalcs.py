@@ -11,8 +11,8 @@ from scipy import constants as const
 import matplotlib.pyplot as plt
 plt.close('all')
 
-import OrbitBasics as ob
-from OrbitBasics import dist
+import orbits.OrbitBasics as ob
+from orbits.OrbitBasics import dist
 import Constants_Eberron as eberron
 CB = eberron.CB # dict of CentralBody objects
 planets = eberron.planets[:-1]

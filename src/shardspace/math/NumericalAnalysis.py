@@ -584,22 +584,23 @@ def pso(J, a=np.array([]), b=np.array([]), N=100, imax=100, dr=[], ineq=[]):
     
     return Y
 
-# TEST
+if __name__ == '__main__':
+    # TEST
 
-'''
-def func(x): return x**2 - 2
-def dfunc(x): return 2*x
-guess = 1
+    # '''
+    def func(x): return x**2 - 2
+    def dfunc(x): return 2*x
+    guess = 1
 
-root = Newton(func, dfunc, guess)
-print(root)
-'''
+    root = Newton(func, dfunc, guess)
+    print(root)
+    '''
 
-'''
-test = Scheme()
-print(test.text)
-print('\n')
+    '''
+    test = Scheme()
+    print(test.text)
+    print('\n')
 
-test2 = Scheme(Butcher['euler'])
-print(test2.text)
-'''
+    test2 = Scheme(Butcher['euler'])
+    print(test2.text)
+    # '''

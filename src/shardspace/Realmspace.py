@@ -1,5 +1,5 @@
 
-import OrbitBasics as ob
+import orbits.OrbitBasics as ob
 
 names = ['Anadia',  # spherical earth body
          'Coliar',  # spherical air body

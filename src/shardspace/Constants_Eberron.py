@@ -7,7 +7,7 @@ This script analyzes various planetary & orbital parameters for Shardspace.
 
 import numpy as np
 from scipy import constants as const
-import OrbitBasics as ob
+import orbits.OrbitBasics as ob
 import Calendars as cal
 
 """

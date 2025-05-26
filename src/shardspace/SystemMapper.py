@@ -20,7 +20,7 @@ from numba import jit
 import pathlib as pl
 from os import path
 
-import OrbitBasics as ob
+import orbits.OrbitBasics as ob
 import Constants_Eberron as eb
 import Calendars as cal
 from Calendars import GalifarDate

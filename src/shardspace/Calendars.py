@@ -10,7 +10,7 @@ from scipy import constants as const
 import math
 from numba import jit
 
-import OrbitBasics as ob
+import orbits.OrbitBasics as ob
 
 Y2D = 336 # Khorvaire year to days
 M2D = 28 # Khorvaire month to days

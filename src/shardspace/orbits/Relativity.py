@@ -10,7 +10,7 @@ from scipy import constants as const
 from matplotlib import pyplot as plt
 
 import OrbitBasics as ob
-import NumericalAnalysis as na
+import shardspace.math.NumericalAnalysis as na
 
 ## ----------------------------------------------------------------------------
 ## CONSTANTS

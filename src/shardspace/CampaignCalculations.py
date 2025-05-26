@@ -1,8 +1,8 @@
 import numpy as np
 
 from Constants_Eberron import ArrahSystem as Eb
-import OrbitBasics as ob
-import Relativity as rel
+import orbits.OrbitBasics as ob
+import orbits.Relativity as rel
 
 mult_CS = 1.25
 
