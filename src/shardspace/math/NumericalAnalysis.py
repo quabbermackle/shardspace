@@ -5,9 +5,11 @@ Created on Fri Aug 27 12:00:13 2021
 @author: Matthew
 """
 
+import os
 import numpy as np
 import random as rng
 from numba import jit
+from pathlib import Path
 
 # define Butcher tableaus
 # the tableau must either be square or have exactly 1 more row than columns
@@ -377,7 +379,15 @@ Butcher['dirkn4'] = norsettdirk4(1.06858)
 
 # class to parse Butcher tableaus into integration schemes
 class Scheme:
-    def __init__(self, tableau = Butcher['rk4']):
+    def __init__(self, tableau = Butcher['rk4'], name:str = None):
+        if name is not None: self.name = name
+        else:
+            for key, value in Butcher.items():
+                if (value.shape == tableau.shape):
+                    if (value == tableau).all():
+                        self.name = key
+                        break
+        
         # store tableau
         self.tableau = tableau
         
@@ -438,13 +448,38 @@ class Scheme:
         for line in self.k: exec(line)
         exec('ynew = ' + self.ynew, globals(), locals())
         return locals()['ynew']
+    
+    def autogen(self):
+        script_location = Path(__file__).absolute().parent
+        filename = script_location / ''.join(['ode_schemes/',self.name,'.py'])
+        filename.touch(exist_ok=True)
+        # print(filename)
+        with open(filename, 'w+', encoding="utf-8") as f:
+            f.write(''.join(['def ', self.name, '(f, h, y, t, misc, **kwargs):\n']))
+            for line in self.k: f.write(''.join(['\t',line,'\n']))
+            f.write(''.join(['\tynew = ', self.ynew,'\n']))
+            f.write('\treturn ynew\n')
+    
+    def __repr__(self):
+        out = ''.join([
+            'Scheme object for the ',
+            self.name,
+            ' method:\n',
+            self.text
+        ])
+        return out
         
 # generate scheme for all predefined tableaus
 for b in Butcher.keys():
-    exec(b+' = Scheme(Butcher[b])')
+    exec(b+' = Scheme(tableau=Butcher[b], name=b)')
     #print(b)
     #print(locals()[b].text)
     #print('\n')
+        
+# write all generated schemes to individual python files
+def autogen_all():
+    for b in Butcher.keys():
+        exec(b+'.autogen()')
         
 # Misc functions
 
@@ -598,9 +633,12 @@ if __name__ == '__main__':
 
     '''
     test = Scheme()
-    print(test.text)
+    print(test)
     print('\n')
+    test.autogen()
 
-    test2 = Scheme(Butcher['euler'])
-    print(test2.text)
+    test2 = Scheme(Butcher['rkf45'])
+    print(test2)
+    
+    # autogen_all()
     # '''
